@@ -237,6 +237,8 @@ export type SyncErrorCode =
   | 'no_encryption' // OS 보안 저장소를 못 써서 키를 안전하게 저장할 수 없음
   | 'network' // 인터넷 연결 문제
   | 'drive' // 드라이브 API 오류
+  | 'folder_unavailable' // 고른 폴더에 접근할 수 없음 (드라이브가 빠졌거나 클라우드 앱이 꺼짐)
+  | 'folder_not_writable' // 고른 폴더에 쓸 수 없음
 
 export interface SyncStatus {
   /** off: 연결 안 함 · connecting: 브라우저 로그인 대기 · idle · syncing · error */
@@ -249,4 +251,16 @@ export interface SyncStatus {
   error: SyncErrorCode | null
   /** 저장된 클라이언트 ID (다시 로그인할 때 보여주기용, 비밀키는 보내지 않는다) */
   clientId: string | null
+  /** 동기화 방식 (#25): 구글 계정(내 키) 또는 클라우드 동기화 폴더 */
+  mode: 'google' | 'folder' | null
+  /** 폴더 방식일 때 기록이 쓰이는 폴더 (고른 폴더 안의 앱 폴더) */
+  folderPath: string | null
+}
+
+/** 이 컴퓨터에서 찾은 클라우드 동기화 폴더 (#25, 찾기는 main/sync/cloudFolders.ts) */
+export type CloudProvider = 'google' | 'dropbox' | 'onedrive' | 'icloud'
+
+export interface CloudFolder {
+  provider: CloudProvider
+  path: string
 }

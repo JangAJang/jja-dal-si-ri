@@ -6,7 +6,7 @@
 | 경로 | 역할 |
 |------|------|
 | `src/shared/` | main·renderer 공용 순수 로직. `timer.ts`(타이머 규칙·집계), `labels.ts`(한/영 문구 묶음 `ko`·`en`, 언어 결정), `ipc.ts`(채널 이름), `view.ts`(창 종류 main/digital/analog), `stats.ts`(기간·일별 집계), `settings.ts`(기기별 설정 형식·검증), `theme.ts`(본체 색 → 테두리·글자색), `sync.ts`(동기화 파일 형식·병합·상태 타입) |
-| `src/main/` | Electron main 프로세스. `index.ts`(앱 수명·단일 인스턴스·종료 흐름), `windows.ts`(기본·미니 창 생성/전환·항상 위·미니 드래그), `timerService.ts`(타이머 상태의 유일한 소유자), `tray.ts`(트레이), `store.ts`(로컬 JSON 저장), `settingsService.ts`(기기별 설정 저장·방송), `sync/`(구글 드라이브 동기화 — 아래 규칙) |
+| `src/main/` | Electron main 프로세스. `index.ts`(앱 수명·단일 인스턴스·종료 흐름), `windows.ts`(기본·미니 창 생성/전환·항상 위·미니 드래그), `timerService.ts`(타이머 상태의 유일한 소유자), `tray.ts`(트레이), `store.ts`(로컬 JSON 저장), `settingsService.ts`(기기별 설정 저장·방송), `sync/`(동기화 — 아래 규칙) |
 | `src/preload/` | 렌더러에 `window.api` 노출. 타입은 `index.d.ts` |
 | `src/renderer/src/` | React 화면. `App.tsx`(URL 해시로 화면 고르기), `views/`(MainView·StatsView·SettingsView·DigitalMini·AnalogMini), `components/`(Lcd·TimerControls·Icons), `hooks.ts`(상태 구독·준비 선택·미니 드래그), `assets/main.css`(디자인 토큰·전체 스타일), `assets/fonts/`(DSEG7 LCD 글꼴, OFL) |
 | `docs/design.md` | 0.1.0 합의 설계와 기능별 이슈 번호 |
@@ -39,7 +39,8 @@
 - **본체 색은 사용자가 바꾼다.** `--shell`·`--ink` 등은 `App.tsx`가 `shellTokens()`로 덮어쓴다. 늘 밝은 면(키·패널·선택된 탭·다이얼 판) 위 글자는 `--panel-ink`를 써야 어두운 본체에서도 보인다 — 새 밝은 면을 만들면 `main.css` 맨 아래 "본체 색과 무관한 밝은 면" 목록에 넣는다.
 - **디자인은 레트로 주방 타이머**(`docs/design.md > 디자인`). 색·크기는 `main.css` 맨 위 토큰을 쓰고 새 색을 즉석에서 만들지 않는다. 분야 색은 `.cat-*`의 `--cat`/`--cat-edge`.
 
-## 구글 드라이브 동기화 (#7) 규칙
+## 동기화 (#7, #25) 규칙
+- 연결 방식은 둘: **폴더**(`sync/store.ts` `FolderStore`, 기본) / **구글 API**(`sync/drive.ts`). 엔진은 `SyncStore` 인터페이스에만 기댄다 — 새 저장소는 이 인터페이스를 구현한다. 기기 구분은 **파일 이름이 아니라 파일 속 `deviceId`** (클라우드 앱 충돌 사본 대비).
 - 구조: `sync/oauth.ts`(PKCE·루프백·토큰) · `sync/session.ts`(액세스 토큰 갱신) · `sync/drive.ts`(드라이브 REST) · `sync/syncEngine.ts`(한 바퀴: 올리기→받기→합치기) — 이 넷은 **Electron 없이** `sync/sync.test.ts`가 가짜 구글 서버(`sync/testing/fakeGoogle.ts`)로 끝까지 검증한다. Electron 쪽(키 암호화 저장·브라우저·주기 실행·IPC)은 `sync/syncService.ts`.
 - **권한은 `drive.file` 하나만.** 범위를 늘리면 구글 심사 대상이 된다(`docs/google-drive-setup.md`).
 - **OAuth 키를 코드·설정 파일·워크플로에 넣지 않는다.** 사용자가 앱에서 입력하고 `safeStorage`로 암호화해 `userData/sync-secrets.bin`에 둔다.

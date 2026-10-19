@@ -1,6 +1,8 @@
 // 구글 드라이브 REST v3 중 동기화에 필요한 것만. 주소는 바꿔 끼울 수 있어 가짜 서버로 테스트한다.
 // 근거: https://developers.google.com/workspace/drive/api/reference/rest/v3/files
 
+import type { StoreEntry, SyncStore } from './store'
+
 export interface DriveEndpoints {
   /** 예: https://www.googleapis.com/drive/v3 */
   api: string
@@ -15,10 +17,7 @@ export const GOOGLE_DRIVE: DriveEndpoints = {
 
 const FOLDER_MIME = 'application/vnd.google-apps.folder'
 
-export interface DriveFile {
-  id: string
-  name: string
-}
+export type DriveFile = StoreEntry
 
 export class DriveError extends Error {
   constructor(
@@ -32,7 +31,7 @@ export class DriveError extends Error {
 /** 작은 따옴표를 쓰는 드라이브 검색식 안의 문자열 이스케이프 */
 const quote = (s: string): string => `'${s.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`
 
-export class DriveClient {
+export class DriveClient implements SyncStore {
   constructor(
     private readonly accessToken: () => Promise<string>,
     private readonly endpoints: DriveEndpoints = GOOGLE_DRIVE,

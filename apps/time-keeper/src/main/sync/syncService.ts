@@ -1,6 +1,8 @@
 // 구글 드라이브 동기화 (#7) — Electron 쪽: 키 보관(safeStorage), 브라우저 로그인, 주기 실행, IPC.
 // 실제 동기화 한 바퀴는 SyncEngine, 토큰은 GoogleSession 이 한다 (둘 다 Electron 없이 테스트됨).
-import { BrowserWindow, Notification, app, ipcMain, safeStorage, shell } from 'electron'
+import { BrowserWindow, Notification, app, dialog, ipcMain, safeStorage, shell } from 'electron'
+import { readdirSync, statSync } from 'fs'
+import { homedir } from 'os'
 import { hostname } from 'os'
 import { randomBytes } from 'crypto'
 import { existsSync, readFileSync, renameSync, rmSync, writeFileSync } from 'fs'
@@ -31,6 +33,10 @@ import {
 } from './oauth'
 import { GoogleSession } from './session'
 import { SyncEngine } from './syncEngine'
+import { FolderStore, FolderUnavailableError } from './store'
+import { detectCloudFolders, type CloudFolder } from './cloudFolders'
+import { encodeConnectionCode } from '../../shared/connectionCode'
+import { DRIVE_FOLDER_NAME } from '../../shared/sync'
 
 /**
  * 개발 중에만: TK_FAKE_GOOGLE=<가짜 서버 주소> 로 구글 대신 가짜 서버(testing/fakeGoogle.ts)에 붙는다.
@@ -61,6 +67,8 @@ const SECRETS_FILE = 'sync-secrets.bin'
 const REMOTE_CACHE_FILE = 'remote-sessions.json'
 /** 다른 기기에 보낸 끝내기 요청 (내 파일에 실어 올린다) */
 const OUTBOX_FILE = 'sync-outbox.json'
+/** 폴더 방식에서 고른 폴더 (#25) */
+const FOLDER_CONFIG_FILE = 'sync-folder.json'
 
 /** 마지막 동기화 결과를 기기에 남겨 두는 형식 — 껐다 켜도, 오프라인이어도 보이게 */
 interface RemoteCache {
@@ -78,6 +86,10 @@ function writeAtomic(path: string, data: string | Buffer): void {
 function classify(e: unknown): SyncErrorCode {
   if (e instanceof OAuthError) return e.code === 'invalid_grant' ? 'needs_login' : 'login_failed'
   if (e instanceof DriveError) return e.status === 401 ? 'needs_login' : 'drive'
+  if (e instanceof FolderUnavailableError) return 'folder_unavailable'
+  if (e && typeof e === 'object' && 'code' in e && (e.code === 'EACCES' || e.code === 'EPERM')) {
+    return 'folder_not_writable'
+  }
   return 'network' // fetch 실패(TypeError) 등
 }
 
@@ -90,7 +102,9 @@ export class SyncService {
     lastSyncedAt: null,
     deviceCount: 0,
     error: null,
-    clientId: null
+    clientId: null,
+    mode: null,
+    folderPath: null
   }
   private running: Promise<void> | null = null
   private again = false
@@ -109,13 +123,30 @@ export class SyncService {
     ipcMain.handle(IPC.syncCancel, () => this.cancelLogin?.())
     ipcMain.handle(IPC.syncDisconnect, () => this.disconnect())
     ipcMain.handle(IPC.syncNow, () => this.syncNow())
+    ipcMain.handle(IPC.syncFolderCandidates, () => this.folderCandidates())
+    ipcMain.handle(IPC.syncPickFolder, async (e) => {
+      const parent = BrowserWindow.fromWebContents(e.sender) ?? undefined
+      const options = { properties: ['openDirectory' as const, 'createDirectory' as const] }
+      const r = parent
+        ? await dialog.showOpenDialog(parent, options)
+        : await dialog.showOpenDialog(options)
+      return r.canceled ? null : (r.filePaths[0] ?? null)
+    })
+    ipcMain.handle(IPC.syncConnectFolder, (_e, path: string) => this.connectFolder(path))
+    ipcMain.handle(IPC.syncExportCode, () =>
+      this.secrets ? encodeConnectionCode(this.secrets) : null
+    )
 
     this.loadRemoteCache()
     this.loadOutbox()
     this.secrets = this.loadSecrets()
+    const folder = this.secrets ? null : this.loadFolderConfig()
     if (this.secrets) {
       this.startSession(this.secrets)
-      this.setStatus({ state: 'idle', clientId: this.secrets.clientId })
+      this.setStatus({ state: 'idle', clientId: this.secrets.clientId, mode: 'google' })
+      setTimeout(() => void this.syncNow(), 3_000)
+    } else if (folder) {
+      this.startFolder(folder)
       setTimeout(() => void this.syncNow(), 3_000)
     }
     setInterval(() => {
@@ -179,7 +210,7 @@ export class SyncService {
       this.secrets = secrets
       this.startSession(secrets)
       this.cancelLogin = null
-      this.setStatus({ state: 'idle', error: null })
+      this.setStatus({ state: 'idle', error: null, mode: 'google', folderPath: null })
       void this.syncNow()
     } catch (e) {
       if (this.status.state !== 'connecting') return this.status // 취소됨
@@ -198,7 +229,73 @@ export class SyncService {
     this.engine = new SyncEngine(drive, this.timer.deviceId)
   }
 
-  /** 연결 끊기: 이 기기의 키·토큰·받아 둔 다른 기기 기록을 지운다. 드라이브의 파일은 그대로 둔다. */
+  // ── 폴더 방식 (#25) ─────────────────────────────────────
+  /** 이 컴퓨터에 있는 클라우드 동기화 폴더 (원클릭 후보) */
+  private folderCandidates(): CloudFolder[] {
+    return detectCloudFolders({
+      platform: process.platform,
+      home: homedir(),
+      env: process.env,
+      isDir: (p) => {
+        try {
+          return statSync(p).isDirectory()
+        } catch {
+          return false
+        }
+      },
+      list: (p) => {
+        try {
+          return readdirSync(p)
+        } catch {
+          return []
+        }
+      }
+    })
+  }
+
+  /** 고른 폴더로 연결: 쓸 수 있는지 먼저 확인하고, 그 안의 앱 폴더에 기기 파일을 둔다 */
+  private async connectFolder(root: string): Promise<SyncStatus> {
+    try {
+      const probe = join(root, `.jjadalsiri-write-test-${randomBytes(3).toString('hex')}`)
+      writeFileSync(probe, '')
+      rmSync(probe, { force: true })
+    } catch (e) {
+      const missing = !!e && typeof e === 'object' && 'code' in e && e.code === 'ENOENT'
+      return this.setStatus({
+        state: 'error',
+        error: missing ? 'folder_unavailable' : 'folder_not_writable'
+      })
+    }
+    if (this.secrets) await this.disconnect() // 한 번에 한 방식만
+    writeAtomic(userFile(FOLDER_CONFIG_FILE), JSON.stringify({ path: root }))
+    this.startFolder(root)
+    void this.syncNow()
+    return this.status
+  }
+
+  private startFolder(root: string): void {
+    this.engine = new SyncEngine(new FolderStore(root), this.timer.deviceId)
+    this.setStatus({
+      state: 'idle',
+      error: null,
+      mode: 'folder',
+      folderPath: join(root, DRIVE_FOLDER_NAME),
+      clientId: null
+    })
+  }
+
+  private loadFolderConfig(): string | null {
+    try {
+      const path = userFile(FOLDER_CONFIG_FILE)
+      if (!existsSync(path)) return null
+      const o = JSON.parse(readFileSync(path, 'utf-8')) as { path?: unknown }
+      return typeof o.path === 'string' && o.path ? o.path : null
+    } catch {
+      return null
+    }
+  }
+
+  /** 연결 끊기: 이 기기의 키·토큰·받아 둔 다른 기기 기록을 지운다. 드라이브·폴더의 파일은 그대로 둔다. */
   private async disconnect(): Promise<SyncStatus> {
     this.cancelLogin?.()
     const token = this.secrets?.refreshToken
@@ -207,6 +304,7 @@ export class SyncService {
     rmSync(userFile(SECRETS_FILE), { force: true })
     rmSync(userFile(REMOTE_CACHE_FILE), { force: true })
     rmSync(userFile(OUTBOX_FILE), { force: true })
+    rmSync(userFile(FOLDER_CONFIG_FILE), { force: true })
     this.outbox = []
     this.timer.setRemoteSessions([])
     // 구글 쪽 권한도 철회 (실패해도 이 기기에서는 이미 끊김)
@@ -220,7 +318,9 @@ export class SyncService {
       error: null,
       lastSyncedAt: null,
       deviceCount: 0,
-      clientId: null
+      clientId: null,
+      mode: null,
+      folderPath: null
     })
   }
 

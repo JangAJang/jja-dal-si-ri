@@ -2,7 +2,7 @@ import { ElectronAPI } from '@electron-toolkit/preload'
 import type { Category, TimerState } from '../shared/timer'
 import type { ViewMode } from '../shared/view'
 import type { Settings, SettingsSnapshot } from '../shared/settings'
-import type { SyncStatus } from '../shared/sync'
+import type { CloudFolder, SyncStatus } from '../shared/sync'
 
 export interface TimeKeeperApi {
   getState: () => Promise<TimerState>
@@ -30,6 +30,12 @@ export interface TimeKeeperApi {
   syncCancel: () => Promise<void>
   syncDisconnect: () => Promise<SyncStatus>
   syncNow: () => Promise<void>
+  /** 폴더 방식 (#25): 이 컴퓨터의 클라우드 폴더 후보, 폴더 고르기 창, 그 폴더로 연결 */
+  syncFolderCandidates: () => Promise<CloudFolder[]>
+  syncPickFolder: () => Promise<string | null>
+  syncConnectFolder: (path: string) => Promise<SyncStatus>
+  /** 구글(내 키) 방식일 때 다른 컴퓨터용 연결 코드, 아니면 null */
+  syncExportCode: () => Promise<string | null>
   onSyncStatus: (listener: (s: SyncStatus) => void) => () => void
 }
 

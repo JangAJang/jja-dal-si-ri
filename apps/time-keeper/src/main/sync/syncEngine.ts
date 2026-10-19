@@ -18,7 +18,7 @@ import {
   type StopRequest
 } from '../../shared/sync'
 import type { ActiveSession, Session } from '../../shared/timer'
-import type { DriveClient, DriveFile } from './drive'
+import type { StoreEntry, SyncStore } from './store'
 
 /** 이 기기가 올릴 내용 */
 export interface OwnState {
@@ -46,7 +46,7 @@ export class SyncEngine {
   private lastUploaded: { body: string; at: number } | null = null
 
   constructor(
-    private readonly drive: DriveClient,
+    private readonly drive: SyncStore,
     private readonly deviceId: string
   ) {}
 
@@ -69,6 +69,8 @@ export class SyncEngine {
         const id = deviceIdFromFileName(f.name)
         if (id === null || id === this.deviceId) continue
         const parsed = parseDeviceFile(await this.drive.download(f.id))
+        // 클라우드 앱의 충돌 사본(sessions-<내 ID> (1).json 등)은 이름이 달라도 내용이 내 기기다 — 건너뛴다
+        if (parsed?.deviceId === this.deviceId) continue
         if (parsed) files.push(parsed)
         else skipped++
       }
@@ -85,8 +87,8 @@ export class SyncEngine {
   private async uploadOwn(
     own: OwnState,
     now: number,
-    home: DriveFile,
-    childrenByFolder: Array<{ folder: DriveFile; children: DriveFile[] }>
+    home: StoreEntry,
+    childrenByFolder: Array<{ folder: StoreEntry; children: StoreEntry[] }>
   ): Promise<boolean> {
     const ownName = deviceFileName(this.deviceId)
     const homeCopy = childrenByFolder[0].children.find((f) => f.name === ownName)
