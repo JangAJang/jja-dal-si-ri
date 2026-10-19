@@ -1,0 +1,21 @@
+# 비밀 정보
+.env
+.env.*
+!.env.example
+
+# Claude Code 개인 설정
+.claude/settings.local.json
+
+# OS/에디터
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# 공통 빌드 산출물 (앱별 .gitignore도 함께 사용)
+node_modules/
+dist/
+build/
+.gradle/
+__pycache__/
+.venv/
