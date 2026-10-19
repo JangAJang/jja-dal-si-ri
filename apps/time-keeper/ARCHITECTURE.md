@@ -42,7 +42,7 @@ flowchart LR
 - **통계 화면** — 기간 탭, 비율 막대 + 합계 표, 일별 누적 막대(호버 툴팁) — `src/renderer/src/views/StatsView.tsx`, `components/DailyChart.tsx`
 - **설정** — 기기별 설정 저장·검증·모든 창에 방송 — `src/main/settingsService.ts`, 형식 `src/shared/settings.ts`, 화면 `views/SettingsView.tsx`
 - **본체 색** — 고른 색에서 테두리·그림자·글자색 계산(어떤 색이든 글자 대비 4.5:1) — `src/shared/theme.ts`
-- **문구** — 분야 이름·화면·트레이·대화상자 문구, 상태 요약(`statusText`) — `src/shared/labels.ts`
+- **문구 (한/영)** — 언어별 문구 묶음(`ko`·`en`), 언어 결정(`resolveLocale`), 상태 요약(`statusText`·`headline`) — `src/shared/labels.ts`. 렌더러는 `MessagesContext`/`useT()`(`src/renderer/src/i18n.ts`)로 받는다
 - **preload API** — `getState`/`start`/`stop`/`onChanged` — `src/preload/index.ts`, 타입 `index.d.ts`
 - **화면** — `App.tsx`가 URL 해시(#main/#digital/#analog)로 `views/`의 화면을 고른다. LCD·키는 `components/`를 세 화면이 함께 쓴다. 준비 선택값은 창마다의 로컬 상태이고, 진행 기록이 바뀌면 저절로 풀린다(`hooks.ts > useSelection`)
 
@@ -58,6 +58,7 @@ flowchart LR
 - (예정) 사용자 본인의 Google Drive — 기기별 파일 동기화, #7
 
 ## 주요 결정 · 제약
+- **언어는 main 이 정한다** (#8) — 설정이 "시스템 따라가기"면 OS 선호 언어(`app.getPreferredSystemLanguages`)가 한국어일 때 한국어, 아니면 영어. 트레이·대화상자도 같은 언어여야 해서 결정을 main(`SettingsService`)에 두고, 렌더러는 결과(`resolvedLocale`)만 받는다.
 - **설정은 기기별 파일, 기록과 분리** — 본체 색·성적표 접힘 같은 화면 취향은 기기마다 달라도 되고 잃어도 되는 값이다. 동기화 대상인 기록 파일(#7)에 섞지 않는다.
 - **본체 색만 사용자 지정** (사용자 결정) — LCD·분야 키 색은 그대로 둬서 어떤 색을 골라도 숫자와 분야가 읽힌다. 글자색은 고른 색에 맞춰 계산하고, RGB 4096가지 표본에서 대비 4.5:1 이상을 테스트로 보장한다.
 - **저장은 UTC 기준 절대 시각, 날짜는 보는 곳의 시간대로** (사용자 확인) — 기록의 시작·끝은 epoch ms(1970-01-01 00:00 UTC부터의 밀리초)로만 저장해 기기·시간대와 무관하다. "오늘", "이번 주", 일별 막대처럼 날짜로 나누는 일은 화면에 보여줄 때 그 기기의 현지 시간대로 한다. 날짜 이동은 달력 단위(`setDate`/`setMonth`)라 윤년·월 길이·서머타임은 OS 시간대 데이터가 처리한다. 여러 시간대 테스트: `src/shared/calendar.test.ts`.

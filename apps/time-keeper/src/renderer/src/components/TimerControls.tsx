@@ -1,6 +1,6 @@
 import { CATEGORIES, type ActiveSession } from '../../../shared/timer'
-import { CATEGORY_LABEL, TEXT } from '../../../shared/labels'
 import type { Selection } from '../hooks'
+import { useT } from '../i18n'
 
 interface Props {
   active: ActiveSession | null
@@ -14,6 +14,7 @@ interface Props {
  * 진행 중인 분야 키는 눌린 채로 걸려 있고(래칭), 준비된 분야는 키 위 LED 가 깜빡인다.
  */
 export function TimerControls({ active, selection, compact = false }: Props): React.JSX.Element {
+  const t = useT()
   const { selected, pick, canStart, start, stop } = selection
 
   const categories = CATEGORIES.map((c) => {
@@ -35,7 +36,7 @@ export function TimerControls({ active, selection, compact = false }: Props): Re
         onClick={() => pick(c)}
       >
         <span className="led" aria-hidden />
-        <span className="key-face">{CATEGORY_LABEL[c]}</span>
+        <span className="key-face">{t.category[c]}</span>
       </button>
     )
   })
@@ -45,14 +46,14 @@ export function TimerControls({ active, selection, compact = false }: Props): Re
       className={`key go ${selected ? `cat-${selected}` : ''}`}
       disabled={!canStart}
       onClick={start}
-      title={TEXT.start}
+      title={t.start}
     >
-      <span className="key-face">{compact ? TEXT.startShort : TEXT.start}</span>
+      <span className="key-face">{compact ? t.startShort : t.start}</span>
     </button>
   )
   const halt = (
-    <button className="key halt" disabled={!active} onClick={stop} title={TEXT.stop}>
-      <span className="key-face">{compact ? TEXT.stopShort : TEXT.stop}</span>
+    <button className="key halt" disabled={!active} onClick={stop} title={t.stop}>
+      <span className="key-face">{compact ? t.stopShort : t.stop}</span>
     </button>
   )
 

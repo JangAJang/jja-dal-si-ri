@@ -5,7 +5,7 @@
 ## 디렉토리 지도
 | 경로 | 역할 |
 |------|------|
-| `src/shared/` | main·renderer 공용 순수 로직. `timer.ts`(타이머 규칙·집계), `labels.ts`(화면·트레이 문구), `ipc.ts`(채널 이름), `view.ts`(창 종류 main/digital/analog), `stats.ts`(기간·일별 집계), `settings.ts`(기기별 설정 형식·검증), `theme.ts`(본체 색 → 테두리·글자색) |
+| `src/shared/` | main·renderer 공용 순수 로직. `timer.ts`(타이머 규칙·집계), `labels.ts`(한/영 문구 묶음 `ko`·`en`, 언어 결정), `ipc.ts`(채널 이름), `view.ts`(창 종류 main/digital/analog), `stats.ts`(기간·일별 집계), `settings.ts`(기기별 설정 형식·검증), `theme.ts`(본체 색 → 테두리·글자색) |
 | `src/main/` | Electron main 프로세스. `index.ts`(앱 수명·단일 인스턴스·종료 흐름), `windows.ts`(기본·미니 창 생성/전환·항상 위·미니 드래그), `timerService.ts`(타이머 상태의 유일한 소유자), `tray.ts`(트레이), `store.ts`(로컬 JSON 저장), `settingsService.ts`(기기별 설정 저장·방송) |
 | `src/preload/` | 렌더러에 `window.api` 노출. 타입은 `index.d.ts` |
 | `src/renderer/src/` | React 화면. `App.tsx`(URL 해시로 화면 고르기), `views/`(MainView·StatsView·SettingsView·DigitalMini·AnalogMini), `components/`(Lcd·TimerControls·Icons), `hooks.ts`(상태 구독·준비 선택·미니 드래그), `assets/main.css`(디자인 토큰·전체 스타일), `assets/fonts/`(DSEG7 LCD 글꼴, OFL) |
@@ -31,7 +31,7 @@
 - `src/shared/`에서 Electron·Node API를 import하지 않는다 (렌더러에서도 쓰기 때문).
 - 저장 형식(`StoreData`, `version: 1`)을 바꾸면 기존 사용자 파일을 읽는 변환 코드를 함께 넣는다.
 - 구글 OAuth 키를 코드·설정 파일·워크플로에 넣지 않는다 — 사용자가 앱에서 직접 입력한다 (`docs/design.md`).
-- 화면·트레이·대화상자 문구는 `src/shared/labels.ts` 한곳에 모은다. 톤은 능청스러운 반말(`docs/design.md > 문구 톤`) — 새 문구도 맞춘다 (#8에서 한/영 리소스로 교체 예정).
+- **문구는 `src/shared/labels.ts`의 `ko`·`en` 두 묶음에 같이 넣는다** (#8). 화면에 글자를 직접 쓰지 않는다. 렌더러는 `const t = useT()`(`src/renderer/src/i18n.ts`), main(트레이·대화상자·창 제목)은 `settingsService.messages`. 두 묶음은 같은 `Messages` 형식이라 한쪽을 빠뜨리면 타입 오류가 난다. 톤은 두 언어 모두 능청스러운 반말(`docs/design.md > 문구 톤`). 영어는 더 길어지니 버튼에 넣으면 화면에서 잘리는지 확인한다.
 - **종료는 `requestQuit()`(`src/main/index.ts`)을 거친다.** 기록 진행 중이면 확인창을 띄운다. `app.quit()`을 직접 부르는 새 경로를 만들지 않는다 — 부르면 `before-quit`이 다시 확인창으로 돌린다.
 - 창 닫기(X)는 숨기기다. 창을 실제로 닫으려면 `markQuitting()` 이후여야 한다 (`src/main/windows.ts`).
 - **창은 `openView(mode)`로만 띄운다.** 한 번에 하나의 창만 보이게 하는 규칙이 거기 있다. 새 창 종류는 `SPECS`와 `src/shared/view.ts`에 추가한다.

@@ -6,18 +6,20 @@ import {
   totalsBetween,
   type TimerState
 } from '../../../shared/timer'
-import { CATEGORY_LABEL, CATEGORY_READY, TEXT, headline } from '../../../shared/labels'
+import { headline } from '../../../shared/labels'
 import { IconAnalog, IconDigital, IconPin } from '../components/Icons'
 import { Lcd } from '../components/Lcd'
 import { TimerControls } from '../components/TimerControls'
 import { useSelection } from '../hooks'
+import { useT } from '../i18n'
 import { nextDay } from '../../../shared/stats'
 import { StatsView } from './StatsView'
 import { SettingsView } from './SettingsView'
-import type { Settings } from '../../../shared/settings'
+import type { SettingsSnapshot } from '../../../shared/settings'
 
 /** 이 창을 항상 위에 띄우기 토글. */
 function PinButton(): React.JSX.Element {
+  const t = useT()
   const [pinned, setPinned] = useState(false)
   useEffect(() => {
     window.api.getAlwaysOnTop().then(setPinned)
@@ -25,7 +27,7 @@ function PinButton(): React.JSX.Element {
   return (
     <button
       className={`nub ${pinned ? 'is-on' : ''}`}
-      title={pinned ? TEXT.pinOff : TEXT.pinOn}
+      title={pinned ? t.pinOff : t.pinOn}
       aria-pressed={pinned}
       onClick={() => window.api.setAlwaysOnTop(!pinned).then(setPinned)}
     >
@@ -42,14 +44,15 @@ export function MainView({
   now
 }: {
   state: TimerState
-  settings: Settings
+  settings: SettingsSnapshot
   now: number
 }): React.JSX.Element {
+  const t = useT()
   const [tab, setTab] = useState<Tab>('timer')
   const tabs: Array<[Tab, string]> = [
-    ['timer', TEXT.tabTimer],
-    ['stats', TEXT.tabStats],
-    ['settings', TEXT.tabSettings]
+    ['timer', t.tabTimer],
+    ['stats', t.tabStats],
+    ['settings', t.tabSettings]
   ]
   const collapsed = settings.reportCollapsed
   const selection = useSelection(state)
@@ -78,16 +81,12 @@ export function MainView({
         <nav className="nubs">
           <button
             className="nub"
-            title={TEXT.toDigital}
+            title={t.toDigital}
             onClick={() => window.api.openView('digital')}
           >
             <IconDigital />
           </button>
-          <button
-            className="nub"
-            title={TEXT.toAnalog}
-            onClick={() => window.api.openView('analog')}
-          >
+          <button className="nub" title={t.toAnalog} onClick={() => window.api.openView('analog')}>
             <IconAnalog />
           </button>
           <PinButton />
@@ -101,22 +100,22 @@ export function MainView({
       ) : (
         <>
           <Lcd
-            label={headline(active, selected)}
+            label={headline(t, active, selected)}
             time={formatHMS(active ? now - active.startedAt : 0)}
-            note={active && selected ? TEXT.nextUp(CATEGORY_READY[selected]) : undefined}
+            note={active && selected ? t.nextUp(t.ready[selected]) : undefined}
           />
 
           <TimerControls active={active} selection={selection} />
 
           <section className={collapsed ? 'report is-collapsed' : 'report'}>
             <div className="report-head">
-              <h2>{TEXT.today}</h2>
+              <h2>{t.today}</h2>
               <button
                 className="fold"
                 aria-expanded={!collapsed}
                 onClick={() => window.api.setSettings({ reportCollapsed: !collapsed })}
               >
-                {collapsed ? TEXT.reportExpand : TEXT.reportCollapse}
+                {collapsed ? t.reportExpand : t.reportCollapse}
                 <span className="fold-mark" aria-hidden>
                   {collapsed ? '▸' : '▾'}
                 </span>
@@ -125,7 +124,7 @@ export function MainView({
             {!collapsed &&
               CATEGORIES.map((c) => (
                 <div key={c} className={`report-row cat-${c}`}>
-                  <span className="report-name">{CATEGORY_LABEL[c]}</span>
+                  <span className="report-name">{t.category[c]}</span>
                   <span className="meter" aria-hidden>
                     <span
                       className="meter-fill"
