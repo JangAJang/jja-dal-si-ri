@@ -5,6 +5,7 @@ import type { Category, TimerState } from '../shared/timer'
 import type { ViewMode } from '../shared/view'
 import type { Settings, SettingsSnapshot } from '../shared/settings'
 import type { CloudFolder, SyncStatus } from '../shared/sync'
+import type { UpdateInfo } from '../shared/update'
 
 // 렌더러에 노출하는 API. 타입은 index.d.ts 의 TimeKeeperApi 와 맞춘다.
 const api = {
@@ -37,6 +38,13 @@ const api = {
   syncConnectFolder: (path: string): Promise<SyncStatus> =>
     ipcRenderer.invoke(IPC.syncConnectFolder, path),
   syncExportCode: (): Promise<string | null> => ipcRenderer.invoke(IPC.syncExportCode),
+  updateGet: (): Promise<UpdateInfo | null> => ipcRenderer.invoke(IPC.updateGet),
+  updateDismiss: (): Promise<void> => ipcRenderer.invoke(IPC.updateDismiss),
+  onUpdateChanged: (listener: (u: UpdateInfo | null) => void): (() => void) => {
+    const handler = (_e: Electron.IpcRendererEvent, u: UpdateInfo | null): void => listener(u)
+    ipcRenderer.on(IPC.updateChanged, handler)
+    return () => ipcRenderer.removeListener(IPC.updateChanged, handler)
+  },
   onSyncStatus: (listener: (s: SyncStatus) => void): (() => void) => {
     const handler = (_e: Electron.IpcRendererEvent, s: SyncStatus): void => listener(s)
     ipcRenderer.on(IPC.syncStatus, handler)

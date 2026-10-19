@@ -48,16 +48,19 @@ export class SettingsService {
 
   register(): void {
     ipcMain.handle(IPC.getSettings, () => this.snapshot)
-    ipcMain.handle(IPC.setSettings, (_e, patch: Partial<Settings>) => {
-      this.settings = normalizeSettings({ ...this.settings, ...patch })
-      const tmp = `${this.path}.tmp`
-      writeFileSync(tmp, JSON.stringify(this.settings), 'utf-8')
-      renameSync(tmp, this.path)
-      const snapshot = this.snapshot
-      for (const win of BrowserWindow.getAllWindows())
-        win.webContents.send(IPC.settingsChanged, snapshot)
-      for (const listener of this.listeners) listener(snapshot)
-      return snapshot
-    })
+    ipcMain.handle(IPC.setSettings, (_e, patch: Partial<Settings>) => this.update(patch))
+  }
+
+  /** 설정 바꾸기 (렌더러 IPC·main 양쪽에서): 검증 → 저장 → 모든 창·구독자에게 알림 */
+  update(patch: Partial<Settings>): SettingsSnapshot {
+    this.settings = normalizeSettings({ ...this.settings, ...patch })
+    const tmp = `${this.path}.tmp`
+    writeFileSync(tmp, JSON.stringify(this.settings), 'utf-8')
+    renameSync(tmp, this.path)
+    const snapshot = this.snapshot
+    for (const win of BrowserWindow.getAllWindows())
+      win.webContents.send(IPC.settingsChanged, snapshot)
+    for (const listener of this.listeners) listener(snapshot)
+    return snapshot
   }
 }

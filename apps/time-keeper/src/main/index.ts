@@ -2,6 +2,7 @@ import { app, dialog, powerMonitor } from 'electron'
 import { electronApp, optimizer } from '@electron-toolkit/utils'
 import { SettingsService } from './settingsService'
 import { SyncService } from './sync/syncService'
+import { UpdateService } from './updateService'
 import { TimerService } from './timerService'
 import { createTray } from './tray'
 import {
@@ -69,7 +70,12 @@ function onReady(): void {
   })
   settingsService.onChange(() => setWindowTitles(settingsService.messages.appName))
   openView('main')
-  createTray(timerService, settingsService, { open: openView, quit: () => void requestQuit() })
+  const updateService = new UpdateService(settingsService)
+  updateService.register()
+  createTray(timerService, settingsService, updateService, {
+    open: openView,
+    quit: () => void requestQuit()
+  })
 
   // mac: 시스템 종료·재시작 시에는 확인창 없이 마감한다.
   powerMonitor.on('shutdown', () => {

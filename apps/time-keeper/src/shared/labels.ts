@@ -112,6 +112,11 @@ export interface Messages {
   syncCodeHint: string
   syncModeFolder: (path: string) => string
   syncModeGoogle: string
+  // 새 버전 알림 (#9)
+  updateAvailable: (version: string) => string
+  updateGet: string
+  updateLater: string
+  trayUpdate: (version: string) => string
 }
 
 const KO_WEEKDAY = ['일', '월', '화', '수', '목', '금', '토']
@@ -242,7 +247,11 @@ export const ko: Messages = {
   syncCopied: '복사했어! 다른 컴퓨터의 "연결 코드" 칸에 붙여 넣어.',
   syncCodeHint: '코드에 키가 들어 있어. 내 컴퓨터끼리만 쓰고 남한테 주지 마.',
   syncModeFolder: (path) => `폴더: ${path}`,
-  syncModeGoogle: '구글 드라이브 (내 키)'
+  syncModeGoogle: '구글 드라이브 (내 키)',
+  updateAvailable: (v) => `새 버전 ${v} 나왔어!`,
+  updateGet: '받으러 가기',
+  updateLater: '나중에',
+  trayUpdate: (v) => `새 버전 받기 (${v})`
 }
 
 const EN_WEEKDAY = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -386,7 +395,11 @@ export const en: Messages = {
   syncCopied: 'Copied! Paste it into "Connection code" on the other computer.',
   syncCodeHint: 'The code contains your key — keep it between your own computers.',
   syncModeFolder: (path) => `Folder: ${path}`,
-  syncModeGoogle: 'Google Drive (your key)'
+  syncModeGoogle: 'Google Drive (your key)',
+  updateAvailable: (v) => `Version ${v} is out!`,
+  updateGet: 'Get it',
+  updateLater: 'Later',
+  trayUpdate: (v) => `Get new version (${v})`
 }
 
 export const MESSAGES: Record<Locale, Messages> = { ko, en }

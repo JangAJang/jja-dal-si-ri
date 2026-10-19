@@ -14,6 +14,8 @@ export interface Settings {
   locale: LocalePreference
   /** 다른 컴퓨터에서 도는 타이머를 여기서 시작할 때 자동으로 끝내기 (#7 이어받기) */
   autoHandoff: boolean
+  /** 새 버전 알림에서 "나중에"를 누른 버전 (#9) — 그 버전은 다시 알리지 않는다 */
+  dismissedUpdate: string | null
 }
 
 /** main 이 렌더러에 보내는 설정: 저장된 값 + 실제로 쓸 언어(auto 를 풀어낸 값). */
@@ -26,7 +28,8 @@ export const DEFAULT_SETTINGS: Settings = {
   shellColor: DEFAULT_SHELL,
   reportCollapsed: false,
   locale: 'auto',
-  autoHandoff: true
+  autoHandoff: true,
+  dismissedUpdate: null
 }
 
 const LOCALE_PREFERENCES: readonly string[] = ['auto', ...LOCALES]
@@ -44,6 +47,10 @@ export function normalizeSettings(raw: unknown): Settings {
       typeof o.locale === 'string' && LOCALE_PREFERENCES.includes(o.locale)
         ? (o.locale as LocalePreference)
         : DEFAULT_SETTINGS.locale,
-    autoHandoff: typeof o.autoHandoff === 'boolean' ? o.autoHandoff : DEFAULT_SETTINGS.autoHandoff
+    autoHandoff: typeof o.autoHandoff === 'boolean' ? o.autoHandoff : DEFAULT_SETTINGS.autoHandoff,
+    dismissedUpdate:
+      typeof o.dismissedUpdate === 'string' && o.dismissedUpdate.length <= 32
+        ? o.dismissedUpdate
+        : null
   }
 }

@@ -1074,3 +1074,30 @@ body[data-view='analog'] {
   padding-top: 8px;
   border-top: 1px dashed var(--keycap-edge);
 }
+
+/* ── 새 버전 알림 (#9) ─────────────────────────── */
+.update-toast {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: var(--panel);
+  color: var(--panel-ink);
+  box-shadow:
+    0 3px 0 var(--shell-edge),
+    0 6px 18px rgba(0, 0, 0, 0.18);
+  font-size: 13px;
+  font-weight: 800;
+  z-index: 10;
+}
+.update-toast span {
+  margin-right: auto;
+}
+.update-toast a.pill {
+  text-decoration: none;
+}

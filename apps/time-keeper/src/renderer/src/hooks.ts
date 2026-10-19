@@ -2,6 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useState } from 'react'
 import { canStart, select, type Category, type TimerState } from '../../shared/timer'
 import type { SettingsSnapshot } from '../../shared/settings'
 import type { SyncStatus } from '../../shared/sync'
+import type { UpdateInfo } from '../../shared/update'
 
 /** 1초마다 갱신되는 현재 시각. 표시용 시간은 항상 (now - startedAt) 으로 계산한다. */
 export function useNow(): number {
@@ -139,4 +140,14 @@ export function useSyncStatus(): SyncStatus | null {
     return window.api.onSyncStatus(setStatus)
   }, [])
   return status
+}
+
+/** 알릴 새 버전 구독 (#9). 없으면 null. */
+export function useUpdate(): UpdateInfo | null {
+  const [update, setUpdate] = useState<UpdateInfo | null>(null)
+  useEffect(() => {
+    window.api.updateGet().then(setUpdate)
+    return window.api.onUpdateChanged(setUpdate)
+  }, [])
+  return update
 }

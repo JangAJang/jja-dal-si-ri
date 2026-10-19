@@ -1,9 +1,10 @@
-import { Menu, Tray, nativeImage } from 'electron'
+import { Menu, Tray, nativeImage, shell } from 'electron'
 import icon from '../../resources/icon.png?asset'
 import { statusText, type Messages } from '../shared/labels'
 import type { ViewMode } from '../shared/view'
 import type { SettingsService } from './settingsService'
 import type { TimerService } from './timerService'
+import type { UpdateService } from './updateService'
 
 interface TrayActions {
   open: (mode: ViewMode) => void
@@ -20,6 +21,7 @@ export let current: Tray | null = null
 export function createTray(
   service: TimerService,
   settings: SettingsService,
+  updates: UpdateService,
   actions: TrayActions
 ): Tray {
   const image = nativeImage.createFromPath(icon).resize({ width: 16, height: 16 })
@@ -29,6 +31,15 @@ export function createTray(
   const buildMenu = (t: Messages): void =>
     tray.setContextMenu(
       Menu.buildFromTemplate([
+        ...(updates.visible
+          ? [
+              {
+                label: t.trayUpdate(updates.visible.version),
+                click: () => void shell.openExternal(updates.visible?.url ?? '')
+              },
+              { type: 'separator' as const }
+            ]
+          : []),
         { label: t.trayOpen, click: () => actions.open('main') },
         { label: t.toDigital, click: () => actions.open('digital') },
         { label: t.toAnalog, click: () => actions.open('analog') },
@@ -50,6 +61,7 @@ export function createTray(
     buildMenu(settings.messages)
     refresh()
   })
+  updates.onChange(() => buildMenu(settings.messages))
   setInterval(refresh, 1000)
 
   return tray

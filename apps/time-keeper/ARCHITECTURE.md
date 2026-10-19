@@ -41,6 +41,7 @@ flowchart LR
 - **통계 계산** — 기간(오늘/주/월/직접) 범위, 일별 합계, 비율 — `src/shared/stats.ts`
 - **통계 화면** — 기간 탭, 비율 막대 + 합계 표, 일별 누적 막대(호버 툴팁) — `src/renderer/src/views/StatsView.tsx`, `components/DailyChart.tsx`
 - **동기화** — 동기화 한 바퀴(`syncEngine.ts`)는 저장소 인터페이스(`store.ts` `SyncStore`)에만 기댄다. 저장소는 둘: 로컬 클라우드 폴더(`FolderStore`, #25)와 구글 드라이브 API(`drive.ts`, OAuth 루프백+PKCE `oauth.ts`·토큰 갱신 `session.ts`). 클라우드 폴더 찾기 `cloudFolders.ts`, 키 파일·연결 코드 `src/shared/connectionCode.ts`. 이들은 Electron 없이 테스트된다, 키 암호화 저장·브라우저·주기 실행·IPC 는 `src/main/sync/syncService.ts`, 화면은 `views/SyncPanel.tsx`
+- **새 버전 알림** — GitHub Releases 에서 이 앱의 더 높은 정식 릴리스 찾기(`src/shared/update.ts` `findUpdate`), 창 알림·트레이 항목 — `src/main/updateService.ts`, `components/UpdateToast.tsx`
 - **설정** — 기기별 설정 저장·검증·모든 창에 방송 — `src/main/settingsService.ts`, 형식 `src/shared/settings.ts`, 화면 `views/SettingsView.tsx`
 - **본체 색** — 고른 색에서 테두리·그림자·글자색 계산(어떤 색이든 글자 대비 4.5:1) — `src/shared/theme.ts`
 - **문구 (한/영)** — 언어별 문구 묶음(`ko`·`en`), 언어 결정(`resolveLocale`), 상태 요약(`statusText`·`headline`) — `src/shared/labels.ts`. 렌더러는 `MessagesContext`/`useT()`(`src/renderer/src/i18n.ts`)로 받는다
