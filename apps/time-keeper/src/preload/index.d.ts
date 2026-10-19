@@ -3,6 +3,7 @@ import type { Category, TimerState } from '../shared/timer'
 import type { ViewMode } from '../shared/view'
 import type { Settings, SettingsSnapshot } from '../shared/settings'
 import type { CloudFolder, SyncStatus } from '../shared/sync'
+import type { UpdateInfo } from '../shared/update'
 
 export interface TimeKeeperApi {
   getState: () => Promise<TimerState>
@@ -36,6 +37,10 @@ export interface TimeKeeperApi {
   syncConnectFolder: (path: string) => Promise<SyncStatus>
   /** 구글(내 키) 방식일 때 다른 컴퓨터용 연결 코드, 아니면 null */
   syncExportCode: () => Promise<string | null>
+  /** 새 버전 알림 (#9): 알릴 새 버전(없거나 "나중에"면 null), "나중에", 바뀔 때 구독 */
+  updateGet: () => Promise<UpdateInfo | null>
+  updateDismiss: () => Promise<void>
+  onUpdateChanged: (listener: (u: UpdateInfo | null) => void) => () => void
   onSyncStatus: (listener: (s: SyncStatus) => void) => () => void
 }
 

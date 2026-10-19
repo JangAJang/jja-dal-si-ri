@@ -14,6 +14,7 @@ import { useFitHeight, useSelection } from '../hooks'
 import { useT } from '../i18n'
 import { nextDay } from '../../../shared/stats'
 import { StatsView } from './StatsView'
+import { UpdateToast } from '../components/UpdateToast'
 import { SettingsView } from './SettingsView'
 import type { SettingsSnapshot } from '../../../shared/settings'
 
@@ -140,6 +141,7 @@ export function MainView({
           </section>
         </>
       )}
+      <UpdateToast />
     </main>
   )
 }

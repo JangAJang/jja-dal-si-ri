@@ -6,7 +6,7 @@
 | 경로 | 역할 |
 |------|------|
 | `src/shared/` | main·renderer 공용 순수 로직. `timer.ts`(타이머 규칙·집계), `labels.ts`(한/영 문구 묶음 `ko`·`en`, 언어 결정), `ipc.ts`(채널 이름), `view.ts`(창 종류 main/digital/analog), `stats.ts`(기간·일별 집계), `settings.ts`(기기별 설정 형식·검증), `theme.ts`(본체 색 → 테두리·글자색), `sync.ts`(동기화 파일 형식·병합·상태 타입) |
-| `src/main/` | Electron main 프로세스. `index.ts`(앱 수명·단일 인스턴스·종료 흐름), `windows.ts`(기본·미니 창 생성/전환·항상 위·미니 드래그), `timerService.ts`(타이머 상태의 유일한 소유자), `tray.ts`(트레이), `store.ts`(로컬 JSON 저장), `settingsService.ts`(기기별 설정 저장·방송), `sync/`(동기화 — 아래 규칙) |
+| `src/main/` | Electron main 프로세스. `index.ts`(앱 수명·단일 인스턴스·종료 흐름), `windows.ts`(기본·미니 창 생성/전환·항상 위·미니 드래그), `timerService.ts`(타이머 상태의 유일한 소유자), `tray.ts`(트레이), `store.ts`(로컬 JSON 저장), `settingsService.ts`(기기별 설정 저장·방송), `updateService.ts`(새 버전 알림), `sync/`(동기화 — 아래 규칙) |
 | `src/preload/` | 렌더러에 `window.api` 노출. 타입은 `index.d.ts` |
 | `src/renderer/src/` | React 화면. `App.tsx`(URL 해시로 화면 고르기), `views/`(MainView·StatsView·SettingsView·DigitalMini·AnalogMini), `components/`(Lcd·TimerControls·Icons), `hooks.ts`(상태 구독·준비 선택·미니 드래그), `assets/main.css`(디자인 토큰·전체 스타일), `assets/fonts/`(DSEG7 LCD 글꼴, OFL) |
 | `docs/design.md` | 0.1.0 합의 설계와 기능별 이슈 번호 |

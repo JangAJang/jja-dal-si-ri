@@ -6,7 +6,7 @@
 - Windows `.exe`(NSIS) / macOS `.dmg`(universal) 데스크톱 앱. Electron + React + Vite + TypeScript.
 - 태그 `time-keeper/v*` 푸시 → `.github/workflows/time-keeper-release.yml`이 두 OS를 빌드해 GitHub Releases에 업로드.
 - 코드 서명 없음. 첫 실행 보안 경고 우회법은 `README.md`에 안내.
-- 새 버전 알림만 (자동 설치 없음 — 미서명 mac은 자동 업데이트 불가). 릴리스 중 `time-keeper/v*` 태그만 비교. → #9
+- 새 버전 알림만 (구현 완료 #9 — `src/main/updateService.ts`, `src/shared/update.ts`). 자동 설치 없음 — 미서명 mac은 자동 업데이트 불가. 켜고 10초 뒤·12시간마다 GitHub Releases 에서 `time-keeper/v*` 정식 릴리스만 비교(다른 앱·초안·미리보기 무시). 새 버전이면 기본 창 아래 알림 [받으러 가기][나중에] + 트레이 맨 위 "새 버전 받기". [나중에]는 그 버전만 다시 안 알림(설정 `dismissedUpdate`).
 
 ## 타이머 규칙 (0.1.0 구현 완료 — `src/shared/timer.ts`)
 - 분야는 `work`(일) · `break`(쉼) · `study`(공부) 3개 고정. 데이터는 문자열 id라 이후 분야 추가 가능.

@@ -22,6 +22,11 @@ describe('normalizeSettings', () => {
     expect(normalizeSettings({ autoHandoff: false }).autoHandoff).toBe(false)
   })
 
+  it('새 버전 "나중에"는 짧은 문자열만', () => {
+    expect(normalizeSettings({ dismissedUpdate: '0.2.0' }).dismissedUpdate).toBe('0.2.0')
+    expect(normalizeSettings({ dismissedUpdate: 5 }).dismissedUpdate).toBeNull()
+  })
+
   it('타입이 다른 값은 무시', () => {
     expect(normalizeSettings({ reportCollapsed: 'yes' }).reportCollapsed).toBe(false)
     expect(normalizeSettings({ reportCollapsed: true }).reportCollapsed).toBe(true)

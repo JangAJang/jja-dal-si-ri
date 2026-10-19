@@ -22,5 +22,8 @@ export const IPC = {
   syncFolderCandidates: 'sync:folderCandidates',
   syncPickFolder: 'sync:pickFolder',
   syncConnectFolder: 'sync:connectFolder',
-  syncExportCode: 'sync:exportCode'
+  syncExportCode: 'sync:exportCode',
+  updateGet: 'update:get',
+  updateDismiss: 'update:dismiss',
+  updateChanged: 'update:changed'
 } as const
