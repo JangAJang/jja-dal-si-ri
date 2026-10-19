@@ -1,20 +1,53 @@
-:root {
-  --bg: #f7f7f5;
-  --fg: #1f2328;
-  --muted: #6b7280;
-  --line: #e5e7eb;
-  --work: #2563eb;
-  --break: #16a34a;
-  --study: #d97706;
+/* 짜달시리 타이머 — 레트로 주방 타이머 (#5 디자인 개편)
+   본체는 파스텔 민트 플라스틱, 숫자는 회녹색 LCD, 분야 키는 색 플라스틱 버튼.
+   눈에 띄는 요소는 LCD 하나. 나머지는 조용하게 둔다. 가전처럼 색이 하나라 다크 모드는 두지 않는다. */
+
+@font-face {
+  font-family: 'DSEG7';
+  src: url('./fonts/DSEG7Classic-BoldItalic.woff2') format('woff2');
+  font-weight: 700;
+  font-style: italic;
+  font-display: block;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #1b1d21;
-    --fg: #e6e6e6;
-    --muted: #9ca3af;
-    --line: #2f3238;
-  }
+:root {
+  /* 본체 */
+  --shell: #b9dec9;
+  --shell-edge: #8fc4ab;
+  --shell-shade: #a3d2bb;
+  --ink: #22302a;
+  --ink-soft: #4d6358;
+  /* 액정 */
+  --lcd: #c9d4b2;
+  --lcd-ink: #26301f;
+  --lcd-ghost: rgba(38, 48, 31, 0.09);
+  /* 키 */
+  --keycap: #f6f4ee;
+  --keycap-edge: #c9c6bb;
+  --work: #f3c343;
+  --work-edge: #c99a1f;
+  --break: #7ec3e4;
+  --break-edge: #4f98bb;
+  --study: #e5533c;
+  --study-edge: #b23a27;
+  --halt: #3a4a42;
+  --halt-edge: #1f2a25;
+  --led-off: #7f9a8c;
+
+  --sans: 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif;
+}
+
+.cat-work {
+  --cat: var(--work);
+  --cat-edge: var(--work-edge);
+}
+.cat-break {
+  --cat: var(--break);
+  --cat-edge: var(--break-edge);
+}
+.cat-study {
+  --cat: var(--study);
+  --cat-edge: var(--study-edge);
 }
 
 * {
@@ -22,121 +55,413 @@
   margin: 0;
 }
 
+html,
+body,
+#root {
+  height: 100%;
+}
+
 body {
-  background: var(--bg);
-  color: var(--fg);
-  font-family:
-    system-ui,
-    -apple-system,
-    'Segoe UI',
-    'Malgun Gothic',
-    sans-serif;
+  background: var(--shell);
+  color: var(--ink);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
   user-select: none;
 }
 
-.app {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  padding: 24px 20px;
-}
-
-.cat-work {
-  --cat: var(--work);
-}
-.cat-break {
-  --cat: var(--break);
-}
-.cat-study {
-  --cat: var(--study);
-}
-
-.current {
-  text-align: center;
-}
-.current-label {
-  color: var(--cat, var(--muted));
-  font-weight: 600;
-}
-.current-time {
-  font-size: 48px;
-  font-variant-numeric: tabular-nums;
-  font-weight: 300;
-}
-
-.current-next {
-  min-height: 1.2em;
-  font-size: 13px;
-  color: var(--cat, var(--muted));
-}
-
-.controls {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.categories,
-.actions {
-  display: grid;
-  gap: 8px;
-}
-.categories {
-  grid-template-columns: repeat(3, 1fr);
-}
-.actions {
-  grid-template-columns: repeat(2, 1fr);
-}
-.controls button {
-  padding: 10px 0;
-  border-radius: 8px;
-  border: 1px solid var(--line);
-  background: transparent;
-  color: var(--fg);
+button {
   font: inherit;
-  cursor: pointer;
-}
-.controls button:disabled {
-  opacity: 0.4;
-  cursor: default;
-}
-/* 분야 버튼: 기본은 테두리, 준비(선택)는 옅은 채움, 진행 중은 진한 채움 */
-.controls .category {
-  border-color: var(--cat);
-  color: var(--cat);
-}
-.controls .category.is-selected {
-  background: color-mix(in srgb, var(--cat) 18%, transparent);
-  font-weight: 600;
-}
-.controls .category.is-running {
-  background: var(--cat);
-  color: #fff;
-}
-.controls .go:not(:disabled) {
-  background: var(--cat, var(--fg));
-  border-color: var(--cat, var(--fg));
-  color: #fff;
-  font-weight: 600;
+  color: inherit;
 }
 
-.today h2 {
-  font-size: 13px;
-  color: var(--muted);
-  margin-bottom: 8px;
+:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
 }
-.today-row {
+
+/* ── 본체 ─────────────────────────────────────── */
+.device {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  height: 100%;
+  padding: 14px 20px 20px;
+}
+
+.device-top {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 4px 0;
+  justify-content: space-between;
 }
-.dot {
-  width: 8px;
-  height: 8px;
+.brand {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ink-soft);
+}
+.nubs {
+  display: flex;
+  gap: 6px;
+}
+/* 본체에 박힌 작은 원형 버튼 */
+.nub {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: none;
   border-radius: 50%;
+  background: var(--shell-shade);
+  color: var(--ink-soft);
+  box-shadow:
+    inset 0 -2px 0 var(--shell-edge),
+    0 1px 0 rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+}
+.nub:hover {
+  color: var(--ink);
+}
+.nub:active,
+.nub.is-on {
+  box-shadow: inset 0 2px 0 var(--shell-edge);
+  color: var(--ink);
+}
+.nub.is-on {
+  background: var(--shell-edge);
+}
+
+/* ── 액정 ─────────────────────────────────────── */
+.lcd {
+  border-radius: 10px;
+  background: var(--lcd);
+  color: var(--lcd-ink);
+  /* 본체에 움푹 박힌 창 */
+  box-shadow:
+    inset 0 3px 0 rgba(0, 0, 0, 0.12),
+    inset 0 0 0 2px rgba(0, 0, 0, 0.06),
+    0 1px 0 rgba(255, 255, 255, 0.6);
+  border: 3px solid var(--shell-edge);
+}
+.lcd-large {
+  padding: 12px 16px 10px;
+}
+.lcd-small {
+  padding: 6px 10px 5px;
+}
+.lcd-label {
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.lcd-small .lcd-label {
+  font-size: 11px;
+}
+.lcd-digits {
+  display: grid;
+  justify-items: end;
+  font-family: 'DSEG7', monospace;
+  font-style: italic;
+  font-weight: 700;
+  line-height: 1;
+}
+/* 꺼진 세그먼트와 켜진 숫자를 같은 칸에 겹친다 */
+.lcd-ghost,
+.lcd-lit {
+  grid-area: 1 / 1;
+}
+.lcd-ghost {
+  color: var(--lcd-ghost);
+}
+.lcd-large .lcd-digits {
+  font-size: 44px;
+  margin: 10px 0 6px;
+}
+.lcd-small .lcd-digits {
+  font-size: 24px;
+  margin-top: 4px;
+}
+.lcd-note {
+  min-height: 1.3em;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+/* ── 키 ───────────────────────────────────────── */
+.keys {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.key-row {
+  display: grid;
+  gap: 10px;
+}
+.key-row.categories {
+  grid-template-columns: repeat(3, 1fr);
+}
+.key-row.actions {
+  grid-template-columns: 2fr 1fr;
+}
+
+/* 플라스틱 키: 아래쪽 두께(그림자)가 있고 누르면 그만큼 내려간다 */
+.key {
+  --face: var(--keycap);
+  --edge: var(--keycap-edge);
+  position: relative;
+  height: 44px;
+  border: none;
+  border-radius: 12px;
+  background: var(--face);
+  box-shadow: 0 5px 0 var(--edge);
+  transform: translateY(0);
+  transition:
+    transform 60ms,
+    box-shadow 60ms;
+  cursor: pointer;
+}
+.key:active:not(:disabled),
+.key.is-latched {
+  transform: translateY(4px);
+  box-shadow: 0 1px 0 var(--edge);
+}
+.key:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+.key-face {
+  font-size: 15px;
+  font-weight: 800;
+}
+
+/* 분야 키: 평소엔 흰 캡에 분야색 띠, 진행 중이면 분야색으로 채워진 채 눌려 있음 */
+.key.category {
+  box-shadow:
+    0 5px 0 var(--edge),
+    inset 0 -4px 0 var(--cat);
+}
+.key.category.is-latched {
+  --face: var(--cat);
+  --edge: var(--cat-edge);
+  box-shadow: 0 1px 0 var(--edge);
+}
+.key.category:active:not(.is-latched) {
+  box-shadow:
+    0 1px 0 var(--edge),
+    inset 0 -4px 0 var(--cat);
+}
+.led {
+  position: absolute;
+  top: 7px;
+  right: 9px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--led-off);
+  opacity: 0.45;
+}
+.key.is-ready .led {
+  background: var(--cat);
+  opacity: 1;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.7);
+  animation: blink 1s steps(1) infinite;
+}
+.key.is-latched .led {
+  background: #fff;
+  opacity: 0.9;
+}
+@keyframes blink {
+  50% {
+    opacity: 0.2;
+  }
+}
+
+.key.go:not(:disabled) {
+  --face: var(--cat, var(--keycap));
+  --edge: var(--cat-edge, var(--keycap-edge));
+}
+.key.halt {
+  --face: var(--halt);
+  --edge: var(--halt-edge);
+  color: var(--keycap);
+}
+
+/* ── 오늘의 성적표 ─────────────────────────────── */
+.report {
+  display: grid;
+  gap: 8px;
+  padding-top: 14px;
+  border-top: 2px dashed var(--shell-edge);
+}
+.report h2 {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--ink-soft);
+}
+.report-row {
+  display: grid;
+  grid-template-columns: 2.5em 1fr auto;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 700;
+}
+.meter {
+  height: 10px;
+  border-radius: 5px;
+  background: var(--shell-shade);
+  box-shadow: inset 0 1px 0 var(--shell-edge);
+  overflow: hidden;
+}
+.meter-fill {
+  display: block;
+  height: 100%;
+  border-radius: 5px;
   background: var(--cat);
 }
-.today-time {
-  margin-left: auto;
+.report-time {
   font-variant-numeric: tabular-nums;
+}
+
+/* ── 미니 공통 ────────────────────────────────── */
+body[data-view='digital'],
+body[data-view='analog'] {
+  background: transparent;
+  overflow: hidden;
+}
+.mini {
+  cursor: grab;
+}
+.mini:active {
+  cursor: grabbing;
+}
+.keys.compact {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 5px;
+}
+.keys.compact .key {
+  height: 26px;
+  border-radius: 7px;
+  box-shadow: 0 3px 0 var(--edge);
+}
+.keys.compact .key.category {
+  box-shadow:
+    0 3px 0 var(--edge),
+    inset 0 -3px 0 var(--cat);
+}
+.keys.compact .key:active:not(:disabled),
+.keys.compact .key.is-latched {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--edge);
+}
+.keys.compact .key-face {
+  font-size: 12px;
+}
+.keys.compact .led {
+  top: 3px;
+  right: 4px;
+  width: 4px;
+  height: 4px;
+}
+
+/* ── 디지털 미니: 작은 LCD 리모컨 ─────────────── */
+.device.mini.digital {
+  gap: 8px;
+  padding: 10px 12px 12px;
+  border-radius: 18px;
+  background: var(--shell);
+  border: 2px solid var(--shell-edge);
+}
+
+/* ── 아날로그 미니: 다이얼 타이머 ─────────────── */
+.mini.analog {
+  position: relative;
+  height: 100%;
+}
+.dial {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.dial-body {
+  fill: var(--shell);
+  stroke: var(--shell-edge);
+  stroke-width: 1.5;
+}
+.dial-ring {
+  fill: none;
+  stroke: var(--cat, var(--shell-edge));
+  stroke-width: 4;
+}
+.dial-face {
+  fill: var(--keycap);
+}
+.tick {
+  stroke: var(--ink-soft);
+  stroke-width: 0.6;
+}
+.tick.major {
+  stroke: var(--ink);
+  stroke-width: 1.4;
+}
+.dial-num {
+  font-family: var(--sans);
+  font-size: 7px;
+  font-weight: 800;
+  fill: var(--ink);
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+.hand polygon {
+  fill: var(--study);
+}
+.hand.is-idle polygon {
+  fill: var(--ink-soft);
+}
+.hub {
+  fill: var(--ink);
+}
+.zero-mark {
+  fill: var(--ink);
+}
+/* 평소엔 숨기고, 마우스를 올리면 키가 다이얼 아래쪽에 나타난다 */
+.hover-keys {
+  position: absolute;
+  left: 50%;
+  bottom: 16%;
+  width: 74%;
+  transform: translateX(-50%);
+  padding: 5px;
+  border-radius: 10px;
+  background: var(--shell);
+  box-shadow: 0 2px 0 var(--shell-edge);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms;
+}
+.mini.analog:hover .hover-keys {
+  opacity: 1;
+  pointer-events: auto;
+}
+.hover-keys .keys.compact {
+  gap: 3px;
+}
+.hover-keys .keys.compact .key {
+  height: 22px;
+}
+.hover-keys .keys.compact .key-face {
+  font-size: 10px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .key.is-ready .led {
+    animation: none;
+  }
+  .key,
+  .hover-keys {
+    transition: none;
+  }
 }

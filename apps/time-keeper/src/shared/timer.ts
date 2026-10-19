@@ -116,6 +116,16 @@ export function startOfDay(t: number): number {
   return d.getTime()
 }
 
+/**
+ * 아날로그 미니의 분침 각도(도, 12시 = 0, 시계 방향).
+ * 기록 시작 순간 12시에서 출발해 60분에 한 바퀴 돈다. 초 단위로 부드럽게 움직인다.
+ */
+export function minuteHandAngle(elapsedMs: number): number {
+  const HOUR = 3_600_000
+  const e = Math.max(0, elapsedMs)
+  return ((e % HOUR) / HOUR) * 360
+}
+
 /** ms → "HH:MM:SS". 100시간 이상이면 시 자리가 늘어난다. */
 export function formatHMS(ms: number): string {
   const total = Math.max(0, Math.floor(ms / 1000))
