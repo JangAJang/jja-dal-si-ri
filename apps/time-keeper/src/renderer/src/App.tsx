@@ -9,7 +9,7 @@ import {
   type Category,
   type TimerState
 } from '../../shared/timer'
-import { CATEGORY_LABEL, CATEGORY_RUNNING, TEXT } from '../../shared/labels'
+import { CATEGORY_LABEL, CATEGORY_READY, CATEGORY_RUNNING, TEXT } from '../../shared/labels'
 
 const DAY_MS = 24 * 60 * 60 * 1000
 
@@ -59,13 +59,13 @@ function App(): React.JSX.Element {
           {active
             ? `● ${CATEGORY_RUNNING[active.category]}`
             : selected
-              ? TEXT.ready(selected)
+              ? CATEGORY_READY[selected]
               : TEXT.idle}
         </div>
         <div className="current-time">{formatHMS(active ? now - active.startedAt : 0)}</div>
         {/* 진행 중에 다른 분야를 고르면, 지금 기록은 계속 세면서 다음 분야를 예고한다 */}
         <div className={`current-next ${selected ? `cat-${selected}` : ''}`}>
-          {active && selected ? `→ ${TEXT.ready(selected)}` : ' '}
+          {active && selected ? `→ ${CATEGORY_READY[selected]}` : ' '}
         </div>
       </section>
 

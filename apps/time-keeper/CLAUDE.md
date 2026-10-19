@@ -29,7 +29,7 @@
 - `src/shared/`에서 Electron·Node API를 import하지 않는다 (렌더러에서도 쓰기 때문).
 - 저장 형식(`StoreData`, `version: 1`)을 바꾸면 기존 사용자 파일을 읽는 변환 코드를 함께 넣는다.
 - 구글 OAuth 키를 코드·설정 파일·워크플로에 넣지 않는다 — 사용자가 앱에서 직접 입력한다 (`docs/design.md`).
-- 화면·트레이·대화상자 문구는 `src/shared/labels.ts` 한곳에 모은다 (#8에서 한/영 리소스로 교체 예정).
+- 화면·트레이·대화상자 문구는 `src/shared/labels.ts` 한곳에 모은다. 톤은 능청스러운 반말(`docs/design.md > 문구 톤`) — 새 문구도 맞춘다 (#8에서 한/영 리소스로 교체 예정).
 - **종료는 `requestQuit()`(`src/main/index.ts`)을 거친다.** 기록 진행 중이면 확인창을 띄운다. `app.quit()`을 직접 부르는 새 경로를 만들지 않는다 — 부르면 `before-quit`이 다시 확인창으로 돌린다.
 - 창 닫기(X)는 숨기기다. 창을 실제로 닫으려면 `quitting = true` 상태여야 한다.
 
