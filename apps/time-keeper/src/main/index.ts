@@ -1,6 +1,7 @@
 import { app, dialog, powerMonitor } from 'electron'
 import { electronApp, optimizer } from '@electron-toolkit/utils'
 import { SettingsService } from './settingsService'
+import { SyncService } from './sync/syncService'
 import { TimerService } from './timerService'
 import { createTray } from './tray'
 import {
@@ -60,6 +61,7 @@ function onReady(): void {
   timerService.register()
   settingsService = new SettingsService()
   settingsService.register()
+  new SyncService(timerService, settingsService).register()
 
   initWindows({
     onSessionEnd: () => timerService.shutdown(),

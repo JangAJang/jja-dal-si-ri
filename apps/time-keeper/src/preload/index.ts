@@ -4,6 +4,7 @@ import { IPC } from '../shared/ipc'
 import type { Category, TimerState } from '../shared/timer'
 import type { ViewMode } from '../shared/view'
 import type { Settings, SettingsSnapshot } from '../shared/settings'
+import type { SyncStatus } from '../shared/sync'
 
 // 렌더러에 노출하는 API. 타입은 index.d.ts 의 TimeKeeperApi 와 맞춘다.
 const api = {
@@ -25,6 +26,17 @@ const api = {
   getSettings: (): Promise<SettingsSnapshot> => ipcRenderer.invoke(IPC.getSettings),
   setSettings: (patch: Partial<Settings>): Promise<SettingsSnapshot> =>
     ipcRenderer.invoke(IPC.setSettings, patch),
+  syncGetStatus: (): Promise<SyncStatus> => ipcRenderer.invoke(IPC.syncGetStatus),
+  syncConnect: (client: { clientId: string; clientSecret?: string }): Promise<SyncStatus> =>
+    ipcRenderer.invoke(IPC.syncConnect, client),
+  syncCancel: (): Promise<void> => ipcRenderer.invoke(IPC.syncCancel),
+  syncDisconnect: (): Promise<SyncStatus> => ipcRenderer.invoke(IPC.syncDisconnect),
+  syncNow: (): Promise<void> => ipcRenderer.invoke(IPC.syncNow),
+  onSyncStatus: (listener: (s: SyncStatus) => void): (() => void) => {
+    const handler = (_e: Electron.IpcRendererEvent, s: SyncStatus): void => listener(s)
+    ipcRenderer.on(IPC.syncStatus, handler)
+    return () => ipcRenderer.removeListener(IPC.syncStatus, handler)
+  },
   onSettingsChanged: (listener: (s: SettingsSnapshot) => void): (() => void) => {
     const handler = (_e: Electron.IpcRendererEvent, s: SettingsSnapshot): void => listener(s)
     ipcRenderer.on(IPC.settingsChanged, handler)

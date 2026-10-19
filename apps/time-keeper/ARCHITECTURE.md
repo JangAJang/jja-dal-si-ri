@@ -40,6 +40,7 @@ flowchart LR
 - **트레이** — 열기/종료 메뉴, 툴팁에 현재 분야·경과 시간(1초 갱신) — `src/main/tray.ts`
 - **통계 계산** — 기간(오늘/주/월/직접) 범위, 일별 합계, 비율 — `src/shared/stats.ts`
 - **통계 화면** — 기간 탭, 비율 막대 + 합계 표, 일별 누적 막대(호버 툴팁) — `src/renderer/src/views/StatsView.tsx`, `components/DailyChart.tsx`
+- **구글 드라이브 동기화** — OAuth(루프백+PKCE)·토큰 갱신·드라이브 REST·동기화 한 바퀴는 Electron 없는 모듈(`src/main/sync/oauth·session·drive·syncEngine.ts`), 키 암호화 저장·브라우저·주기 실행·IPC 는 `src/main/sync/syncService.ts`, 화면은 `views/SyncPanel.tsx`
 - **설정** — 기기별 설정 저장·검증·모든 창에 방송 — `src/main/settingsService.ts`, 형식 `src/shared/settings.ts`, 화면 `views/SettingsView.tsx`
 - **본체 색** — 고른 색에서 테두리·그림자·글자색 계산(어떤 색이든 글자 대비 4.5:1) — `src/shared/theme.ts`
 - **문구 (한/영)** — 언어별 문구 묶음(`ko`·`en`), 언어 결정(`resolveLocale`), 상태 요약(`statusText`·`headline`) — `src/shared/labels.ts`. 렌더러는 `MessagesContext`/`useT()`(`src/renderer/src/i18n.ts`)로 받는다
@@ -55,10 +56,15 @@ flowchart LR
 ## 외부 의존 · 인프라
 - 로컬 파일 `userData/time-keeper-data.json` — 기록 저장 (Windows: `%APPDATA%\time-keeper\`)
 - GitHub Actions + Releases — 설치 파일 빌드·배포 (`.github/workflows/time-keeper-release.yml`, 루트)
-- (예정) 사용자 본인의 Google Drive — 기기별 파일 동기화, #7
+- 사용자 본인의 Google Drive — `Jjadalsiri Timer` 폴더에 기기별 `sessions-<기기ID>.json` (#7). 권한 `drive.file`. OAuth 클라이언트는 사용자가 직접 만든다(`docs/google-drive-setup.md`)
 
 ## 주요 결정 · 제약
-- **언어는 main 이 정한다** (#8) — 설정이 "시스템 따라가기"면 OS 선호 언어(`app.getPreferredSystemLanguages`)가 한국어일 때 한국어, 아니면 영어. 트레이·대화상자도 같은 언어여야 해서 결정을 main(`SettingsService`)에 두고, 렌더러는 결과(`resolvedLocale`)만 받는다.
+- **동기화는 기기별 파일 + 읽기 전용 병합** (#7) — 기기마다 자기 파일에만 쓰므로 여러 기기가 동시에 동기화해도 덮어쓰지 않는다. 다른 기기 기록은 통계에만 더해지고 이 기기 파일에는 들어가지 않는다. 마지막으로 받은 기록·동기화 시각은 `userData/remote-sessions.json`에 남겨 오프라인·재시작에서도 보인다.
+- **기기 사이 자동 이어받기** (사용자 결정) — "한 번에 하나" 규칙을 기기 사이로. 각 기기가 자기 파일에만 쓴다는 원칙을 지키려고, 다른 기기를 직접 바꾸지 않고 "끝내 줘" 요청을 내 파일에 적고 저쪽이 읽어 스스로 끝낸다. 규칙(살아 있음 판정·누가 끄나·요청 처리)은 `src/shared/sync.ts` 순수 함수.
+- **같은 이름 폴더가 여러 개여도 수렴** — 드라이브에는 원자적 "없으면 만들기"가 없어 처음 동시 연결 때 폴더가 여러 개 생길 수 있다. 가장 먼저 만든 폴더를 집으로 삼고 모든 폴더에서 읽는다.
+- **OAuth 는 서버 없는 데스크톱 방식** — 루프백(`127.0.0.1:임의포트`) 리디렉트 + PKCE(S256). 구글이 데스크톱 앱에 권장하는 방식이다. 키는 사용자가 만든 것이라 레포·설치본에 비밀이 없다. 리프레시 토큰은 `safeStorage`(Windows DPAPI / macOS 키체인)로 암호화한다.
+- **동기화 핵심은 Electron 과 분리** — 실제 구글 키 없이도 동기화 전체를 검증하려고, 엔진은 주소를 바꿔 끼울 수 있게 만들고 가짜 구글 서버로 테스트한다.
+- **언어는 main 이 정한다** (#8) — 설정이 "시스템 언어"면 OS 선호 언어(`app.getPreferredSystemLanguages`)가 한국어일 때 한국어, 아니면 영어. 트레이·대화상자도 같은 언어여야 해서 결정을 main(`SettingsService`)에 두고, 렌더러는 결과(`resolvedLocale`)만 받는다.
 - **설정은 기기별 파일, 기록과 분리** — 본체 색·성적표 접힘 같은 화면 취향은 기기마다 달라도 되고 잃어도 되는 값이다. 동기화 대상인 기록 파일(#7)에 섞지 않는다.
 - **본체 색만 사용자 지정** (사용자 결정) — LCD·분야 키 색은 그대로 둬서 어떤 색을 골라도 숫자와 분야가 읽힌다. 글자색은 고른 색에 맞춰 계산하고, RGB 4096가지 표본에서 대비 4.5:1 이상을 테스트로 보장한다.
 - **저장은 UTC 기준 절대 시각, 날짜는 보는 곳의 시간대로** (사용자 확인) — 기록의 시작·끝은 epoch ms(1970-01-01 00:00 UTC부터의 밀리초)로만 저장해 기기·시간대와 무관하다. "오늘", "이번 주", 일별 막대처럼 날짜로 나누는 일은 화면에 보여줄 때 그 기기의 현지 시간대로 한다. 날짜 이동은 달력 단위(`setDate`/`setMonth`)라 윤년·월 길이·서머타임은 OS 시간대 데이터가 처리한다. 여러 시간대 테스트: `src/shared/calendar.test.ts`.

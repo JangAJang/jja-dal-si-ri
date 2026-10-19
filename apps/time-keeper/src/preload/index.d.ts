@@ -2,6 +2,7 @@ import { ElectronAPI } from '@electron-toolkit/preload'
 import type { Category, TimerState } from '../shared/timer'
 import type { ViewMode } from '../shared/view'
 import type { Settings, SettingsSnapshot } from '../shared/settings'
+import type { SyncStatus } from '../shared/sync'
 
 export interface TimeKeeperApi {
   getState: () => Promise<TimerState>
@@ -23,6 +24,13 @@ export interface TimeKeeperApi {
   getSettings: () => Promise<SettingsSnapshot>
   setSettings: (patch: Partial<Settings>) => Promise<SettingsSnapshot>
   onSettingsChanged: (listener: (s: SettingsSnapshot) => void) => () => void
+  /** 구글 드라이브 동기화 (#7). 연결은 브라우저 로그인이 끝날 때까지 기다린다. */
+  syncGetStatus: () => Promise<SyncStatus>
+  syncConnect: (client: { clientId: string; clientSecret?: string }) => Promise<SyncStatus>
+  syncCancel: () => Promise<void>
+  syncDisconnect: () => Promise<SyncStatus>
+  syncNow: () => Promise<void>
+  onSyncStatus: (listener: (s: SyncStatus) => void) => () => void
 }
 
 declare global {

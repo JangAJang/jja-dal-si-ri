@@ -876,3 +876,120 @@ body[data-view='analog'] {
   color: var(--panel-ink);
   box-shadow: 0 1px 0 var(--keycap-edge);
 }
+
+/* ── 구글 드라이브 동기화 (#7) ─────────────────── */
+/* 설정 탭은 패널이 셋이라 창보다 길어질 수 있다 — 이 영역만 스크롤 */
+.settings {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-bottom: 4px;
+}
+.sync-intro,
+.sync-line {
+  font-size: 13px;
+  font-weight: 600;
+}
+.sync-line {
+  margin-bottom: 8px;
+}
+.sync-error {
+  margin: 6px 0 8px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: #fbe3dc;
+  color: #8a2a17;
+  font-size: 12px;
+  font-weight: 600;
+}
+.sync-form {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+}
+.sync-form label {
+  display: grid;
+  gap: 3px;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--panel-ink-soft);
+}
+.sync-form input {
+  min-width: 0;
+  padding: 6px 8px;
+  border: 2px solid var(--keycap-edge);
+  border-radius: 7px;
+  background: #fff;
+  color: var(--panel-ink);
+  font: inherit;
+  font-size: 12px;
+}
+.sync-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.sync-actions a {
+  margin-right: auto;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--break-ink);
+}
+.sync-actions .sync-line {
+  margin: 0 auto 0 0;
+}
+.pill {
+  padding: 6px 12px;
+  border: 2px solid var(--keycap-edge);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--panel-ink);
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.pill.primary {
+  border-color: var(--panel-ink);
+  background: var(--panel-ink);
+  color: var(--panel);
+}
+.pill:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+/* 스크롤 막대: 운영체제 기본(굵은 회색) 대신 본체 톤의 얇은 막대 */
+.settings::-webkit-scrollbar {
+  width: 6px;
+}
+.settings::-webkit-scrollbar-thumb {
+  border-radius: 3px;
+  background: var(--shell-edge);
+}
+.settings::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* 켜기/끄기 줄 (자동 이어받기 등) */
+.toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 4px 0 10px;
+  cursor: pointer;
+}
+.toggle input {
+  margin-top: 2px;
+  accent-color: var(--panel-ink);
+}
+.toggle span {
+  display: grid;
+  gap: 2px;
+}
+.toggle strong {
+  font-size: 12px;
+}
+.toggle small {
+  font-size: 11px;
+  color: var(--panel-ink-soft);
+}

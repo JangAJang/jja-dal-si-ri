@@ -3,6 +3,7 @@ import type { LocalePreference, Settings, SettingsSnapshot } from '../../../shar
 import { LOCALES } from '../../../shared/labels'
 import { SHELL_PRESETS, clampChannel, hexToRgb, rgbToHex, type Rgb } from '../../../shared/theme'
 import { useT } from '../i18n'
+import { SyncPanel } from './SyncPanel'
 
 const CHANNELS = ['r', 'g', 'b'] as const
 const LOCALE_CHOICES: LocalePreference[] = ['auto', ...LOCALES]
@@ -66,7 +67,7 @@ function ShellColor({ hex }: { hex: string }): React.JSX.Element {
   )
 }
 
-/** 언어: 시스템 따라가기 / 한국어 / English (#8). 언어 이름은 각 언어로 쓴다. */
+/** 언어: 시스템 언어 / 한국어 / English (#8). 언어 이름은 각 언어로 쓴다. */
 function Language({ value }: { value: LocalePreference }): React.JSX.Element {
   const t = useT()
   return (
@@ -94,6 +95,7 @@ export function SettingsView({ settings }: { settings: SettingsSnapshot }): Reac
     <div className="settings">
       <ShellColor hex={settings.shellColor} />
       <Language value={settings.locale} />
+      <SyncPanel autoHandoff={settings.autoHandoff} />
     </div>
   )
 }
