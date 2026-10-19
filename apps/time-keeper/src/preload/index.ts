@@ -3,6 +3,7 @@ import { electronAPI } from '@electron-toolkit/preload'
 import { IPC } from '../shared/ipc'
 import type { Category, TimerState } from '../shared/timer'
 import type { ViewMode } from '../shared/view'
+import type { Settings } from '../shared/settings'
 
 // 렌더러에 노출하는 API. 타입은 index.d.ts 의 TimeKeeperApi 와 맞춘다.
 const api = {
@@ -19,7 +20,15 @@ const api = {
   setAlwaysOnTop: (value: boolean): Promise<boolean> =>
     ipcRenderer.invoke(IPC.setAlwaysOnTop, value),
   dragStart: (): void => ipcRenderer.send(IPC.dragStart),
-  dragEnd: (): void => ipcRenderer.send(IPC.dragEnd)
+  dragEnd: (): void => ipcRenderer.send(IPC.dragEnd),
+  getSettings: (): Promise<Settings> => ipcRenderer.invoke(IPC.getSettings),
+  setSettings: (patch: Partial<Settings>): Promise<Settings> =>
+    ipcRenderer.invoke(IPC.setSettings, patch),
+  onSettingsChanged: (listener: (s: Settings) => void): (() => void) => {
+    const handler = (_e: Electron.IpcRendererEvent, s: Settings): void => listener(s)
+    ipcRenderer.on(IPC.settingsChanged, handler)
+    return () => ipcRenderer.removeListener(IPC.settingsChanged, handler)
+  }
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

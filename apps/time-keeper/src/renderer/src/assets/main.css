@@ -490,8 +490,9 @@ body[data-view='analog'] {
 .hub {
   fill: var(--ink);
 }
+/* 다이얼 판이 아니라 본체 테두리 위에 있어서 본체 글자색을 따른다 */
 .zero-mark {
-  fill: var(--ink);
+  fill: var(--body-ink);
 }
 .nub.expand.corner {
   position: absolute;
@@ -738,4 +739,118 @@ body[data-view='analog'] {
 }
 .tip-row .swatch {
   box-shadow: 0 0 0 1px var(--panel);
+}
+
+/* ── 오늘의 성적표 접기 (#21) ─────────────────── */
+.report-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.fold {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.fold:hover {
+  background: var(--shell-shade);
+  color: var(--ink);
+}
+
+/* ── 설정 (#21) ───────────────────────────────── */
+.settings {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.presets {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.preset {
+  aspect-ratio: 1;
+  border: 2px solid rgba(0, 0, 0, 0.12);
+  border-radius: 10px;
+  cursor: pointer;
+}
+.preset.is-on {
+  outline: 3px solid var(--lcd-ink);
+  outline-offset: 2px;
+}
+.rgb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.rgb label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--lcd-ink);
+}
+.rgb input {
+  width: 3.4em;
+  padding: 4px 4px;
+  border: 2px solid var(--keycap-edge);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--lcd-ink);
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+}
+.rgb-chip {
+  width: 22px;
+  height: 22px;
+  margin-left: auto;
+  border-radius: 6px;
+  border: 2px solid rgba(0, 0, 0, 0.12);
+}
+.rgb-hex {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--lcd-ink);
+}
+.hint {
+  margin-top: 10px;
+  font-size: 12px;
+  color: #6b6f68;
+}
+
+/* ── 본체 색과 무관한 밝은 면 (#21) ───────────────
+   본체 색을 어둡게 바꾸면 --ink 가 밝아진다. 키·종이 패널·선택된 탭·다이얼 판처럼
+   늘 밝은 면 위의 글자는 본체 글자색을 따라가면 안 되므로 여기서 고정한다. */
+:root {
+  --panel-ink: #26301f;
+  /* .dial 안에서 --ink 를 덮어써도 본체 위 요소가 쓸 본체 글자색 */
+  --body-ink: var(--ink);
+  --panel-ink-soft: #5c6660;
+}
+.panel,
+.dial,
+.custom-range input {
+  --ink: var(--panel-ink);
+  --ink-soft: var(--panel-ink-soft);
+  color: var(--ink);
+}
+.key {
+  color: var(--panel-ink);
+}
+.key.halt {
+  color: var(--keycap);
+}
+.tabs button.is-on,
+.segmented button.is-on {
+  color: var(--panel-ink);
 }
