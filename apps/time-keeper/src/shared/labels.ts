@@ -46,6 +46,7 @@ export const TEXT = {
   pinOn: '맨 위에 박제',
   pinOff: '박제 풀기',
   miniHint: '더블클릭하면 다시 커져',
+  expand: '다시 크게',
   nextUp: (ready: string): string => `다음: ${ready}`,
   startShort: '▶',
   stopShort: '■',

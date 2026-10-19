@@ -1,5 +1,6 @@
 import { minuteHandAngle, type TimerState } from '../../../shared/timer'
 import { TEXT } from '../../../shared/labels'
+import { ExpandButton } from '../components/ExpandButton'
 import { TimerControls } from '../components/TimerControls'
 import { useMiniWindow, useSelection } from '../hooks'
 
@@ -58,6 +59,8 @@ export function AnalogMini({ state, now }: { state: TimerState; now: number }): 
         </g>
         <circle className="hub" cx="50" cy="50" r="4.5" />
       </svg>
+      {/* 원형 다이얼 바깥의 빈 오른쪽 아래 모서리 */}
+      <ExpandButton className="corner" />
     </main>
   )
 }

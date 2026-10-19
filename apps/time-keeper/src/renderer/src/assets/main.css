@@ -367,7 +367,27 @@ body[data-view='analog'] {
   height: 4px;
 }
 
+/* "다시 크게" 버튼 (두 미니 공통) */
+.nub.expand {
+  flex: none;
+  width: 26px;
+  height: 26px;
+}
+.nub.expand svg {
+  width: 14px;
+  height: 14px;
+}
+
 /* ── 디지털 미니: 작은 LCD 리모컨 ─────────────── */
+.mini-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+.mini-head .lcd {
+  flex: 1;
+  min-width: 0;
+}
 .device.mini.digital {
   gap: 8px;
   padding: 10px 12px 12px;
@@ -379,6 +399,7 @@ body[data-view='analog'] {
 /* ── 아날로그 미니: 다이얼 타이머 ─────────────── */
 /* 위: 키 줄(호버 시), 아래: 다이얼 */
 .mini.analog {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -435,6 +456,13 @@ body[data-view='analog'] {
 .zero-mark {
   fill: var(--ink);
 }
+.nub.expand.corner {
+  position: absolute;
+  right: 2px;
+  bottom: 4px;
+  border: 2px solid var(--shell-edge);
+}
+
 /* 평소엔 숨기고, 마우스를 올리면 키가 다이얼 아래쪽에 나타난다 */
 .hover-keys {
   flex: none;
