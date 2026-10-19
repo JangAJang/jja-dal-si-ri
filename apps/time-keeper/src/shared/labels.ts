@@ -1,28 +1,54 @@
 import { formatHMS, type ActiveSession, type Category } from './timer'
 
 // 화면·트레이 문구. main 과 renderer 가 함께 쓴다.
+// 톤: 능청스러운 반말 (#14, 사용자 확정). 문구를 바꿀 때 톤을 맞춘다.
 // TODO(#8): 한/영 전환 시 이 파일을 번역 리소스로 대체한다.
+
+/** 분야 버튼·오늘 합계에 쓰는 짧은 이름. */
 export const CATEGORY_LABEL: Record<Category, string> = {
   work: '일',
   break: '쉼',
   study: '공부'
 }
 
-export const TEXT = {
-  appName: '짜달시리 타이머',
-  idle: '대기 중',
-  trayOpen: '열기',
-  trayQuit: '종료',
-  quitConfirmTitle: '타이머 종료',
-  quitConfirmMessage: (category: Category): string =>
-    `${CATEGORY_LABEL[category]} 기록이 진행 중입니다.`,
-  quitConfirmDetail: '종료하면 기록이 지금 시각으로 끝납니다.',
-  quitConfirmOk: '종료',
-  quitConfirmCancel: '취소'
+/** 분야를 골랐지만 아직 [시작] 전. */
+export const CATEGORY_READY: Record<Category, string> = {
+  work: '돈...벌어야겠지?',
+  break: '숨고르기',
+  study: '이제 진짜 공부뿐이야'
 }
 
-/** 현재 상태 한 줄 요약. 예: "공부 중 01:23:45", "대기 중". 트레이 툴팁에 쓴다. */
+/** 진행 중 상태. */
+export const CATEGORY_RUNNING: Record<Category, string> = {
+  work: '돈 버는 중 💸',
+  break: '충전 중 🔋',
+  study: '뇌 키우는 중 🧠'
+}
+
+/** 종료 확인창 첫 줄. */
+const QUIT_INTERRUPT: Record<Category, string> = {
+  work: '잠깐, 돈 벌던 중이잖아!',
+  break: '잠깐, 충전하던 중이잖아!',
+  study: '잠깐, 뇌 키우던 중이잖아!'
+}
+
+export const TEXT = {
+  appName: '짜달시리 타이머',
+  idle: '멍 때리는 중',
+  start: '가보자고',
+  stop: '그만!',
+  today: '오늘의 성적표',
+  trayOpen: '나와봐',
+  trayQuit: '오늘은 여기까지',
+  quitConfirmTitle: '진짜 끌 거야?',
+  quitConfirmMessage: (category: Category): string => QUIT_INTERRUPT[category],
+  quitConfirmDetail: '끄면 지금까지만 기록돼.',
+  quitConfirmOk: '그래도 끌래',
+  quitConfirmCancel: '아 맞다, 더 할게'
+}
+
+/** 현재 상태 한 줄 요약. 예: "뇌 키우는 중 🧠 01:23:45", "멍 때리는 중". 트레이 툴팁에 쓴다. */
 export function statusText(active: ActiveSession | null, now: number): string {
   if (!active) return TEXT.idle
-  return `${CATEGORY_LABEL[active.category]} 중 ${formatHMS(now - active.startedAt)}`
+  return `${CATEGORY_RUNNING[active.category]} ${formatHMS(now - active.startedAt)}`
 }
