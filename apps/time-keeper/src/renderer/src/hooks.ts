@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useState } from 'react'
 import { canStart, select, type Category, type TimerState } from '../../shared/timer'
 import type { SettingsSnapshot } from '../../shared/settings'
+import type { SyncStatus } from '../../shared/sync'
 
 /** 1초마다 갱신되는 현재 시각. 표시용 시간은 항상 (now - startedAt) 으로 계산한다. */
 export function useNow(): number {
@@ -128,4 +129,14 @@ export function useFitHeight(ref: React.RefObject<HTMLElement | null>, shrink: b
     measure()
     document.fonts.ready.then(measure)
   }, [ref, shrink])
+}
+
+/** 구글 드라이브 동기화 상태 구독 (#7). 첫 응답 전에는 null. */
+export function useSyncStatus(): SyncStatus | null {
+  const [status, setStatus] = useState<SyncStatus | null>(null)
+  useEffect(() => {
+    window.api.syncGetStatus().then(setStatus)
+    return window.api.onSyncStatus(setStatus)
+  }, [])
+  return status
 }

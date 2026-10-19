@@ -12,5 +12,11 @@ export const IPC = {
   fitHeight: 'window:fitHeight',
   getSettings: 'settings:get',
   setSettings: 'settings:set',
-  settingsChanged: 'settings:changed'
+  settingsChanged: 'settings:changed',
+  syncGetStatus: 'sync:getStatus',
+  syncConnect: 'sync:connect',
+  syncCancel: 'sync:cancel',
+  syncDisconnect: 'sync:disconnect',
+  syncNow: 'sync:now',
+  syncStatus: 'sync:status'
 } as const
