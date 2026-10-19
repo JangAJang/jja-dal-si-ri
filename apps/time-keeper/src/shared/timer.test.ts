@@ -1,5 +1,15 @@
 import { describe, expect, it } from 'vitest'
-import { formatHMS, heartbeat, recover, start, stop, totalsBetween, type TimerState } from './timer'
+import {
+  canStart,
+  formatHMS,
+  heartbeat,
+  recover,
+  select,
+  start,
+  stop,
+  totalsBetween,
+  type TimerState
+} from './timer'
 
 const empty: TimerState = { active: null, sessions: [] }
 const H = 3_600_000
@@ -52,6 +62,30 @@ describe('totalsBetween', () => {
   it('진행 중인 기록은 now 까지 포함한다', () => {
     const s = start(empty, 'work', 0, 'a')
     expect(totalsBetween(s, 0, 10 * H, 3 * H).work).toBe(3 * H)
+  })
+})
+
+describe('select / canStart (준비 → 시작)', () => {
+  const working = start(empty, 'work', 0, 'a').active
+
+  it('대기 중에 분야를 누르면 준비 상태가 되고 시작할 수 있다', () => {
+    expect(select(null, 'study', null)).toBe('study')
+    expect(canStart('study', null)).toBe(true)
+  })
+
+  it('준비된 분야를 다시 누르면 선택이 풀린다', () => {
+    expect(select('study', 'study', null)).toBeNull()
+    expect(canStart(null, null)).toBe(false)
+  })
+
+  it('진행 중에 다른 분야를 누르면 준비만 바뀌고, 시작해야 전환된다', () => {
+    expect(select(null, 'break', working)).toBe('break')
+    expect(canStart('break', working)).toBe(true)
+  })
+
+  it('진행 중인 분야를 누르면 전환 예약이 취소된다', () => {
+    expect(select('break', 'work', working)).toBeNull()
+    expect(canStart('work', working)).toBe(false)
   })
 })
 

@@ -8,6 +8,6 @@ describe('statusText', () => {
 
   it('진행 중이면 분야와 경과 시간', () => {
     const active = { id: 'a', category: 'study' as const, startedAt: 0, lastHeartbeatAt: 0 }
-    expect(statusText(active, 5_025_000)).toBe('공부 중 01:23:45')
+    expect(statusText(active, 5_025_000)).toBe('공부하는 중 01:23:45')
   })
 })

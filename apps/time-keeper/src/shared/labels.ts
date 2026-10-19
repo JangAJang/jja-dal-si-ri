@@ -8,9 +8,20 @@ export const CATEGORY_LABEL: Record<Category, string> = {
   study: '공부'
 }
 
+/** 진행 중 상태 문구. */
+export const CATEGORY_RUNNING: Record<Category, string> = {
+  work: '일하는 중',
+  break: '쉬는 중',
+  study: '공부하는 중'
+}
+
 export const TEXT = {
   appName: '짜달시리 타이머',
   idle: '대기 중',
+  ready: (category: Category): string => `${CATEGORY_LABEL[category]} 준비`,
+  start: '시작',
+  stop: '종료',
+  today: '오늘',
   trayOpen: '열기',
   trayQuit: '종료',
   quitConfirmTitle: '타이머 종료',
@@ -21,8 +32,8 @@ export const TEXT = {
   quitConfirmCancel: '취소'
 }
 
-/** 현재 상태 한 줄 요약. 예: "공부 중 01:23:45", "대기 중". 트레이 툴팁에 쓴다. */
+/** 현재 상태 한 줄 요약. 예: "공부하는 중 01:23:45", "대기 중". 트레이 툴팁에 쓴다. */
 export function statusText(active: ActiveSession | null, now: number): string {
   if (!active) return TEXT.idle
-  return `${CATEGORY_LABEL[active.category]} 중 ${formatHMS(now - active.startedAt)}`
+  return `${CATEGORY_RUNNING[active.category]} ${formatHMS(now - active.startedAt)}`
 }

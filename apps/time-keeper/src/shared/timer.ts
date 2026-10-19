@@ -68,6 +68,26 @@ export function heartbeat(state: TimerState, now: number): TimerState {
   return { ...state, active: { ...state.active, lastHeartbeatAt: now } }
 }
 
+/**
+ * 분야 버튼 클릭 → 다음 "준비" 선택값. (준비 → [시작] 2단계 흐름, #12)
+ * - 이미 고른 분야를 다시 누르면 선택 해제
+ * - 지금 진행 중인 분야를 누르면 선택 해제 (전환 예약 취소)
+ * - 그 외에는 그 분야를 준비 상태로. 진행 중인 기록은 [시작]을 누를 때까지 계속된다.
+ */
+export function select(
+  selected: Category | null,
+  clicked: Category,
+  active: ActiveSession | null
+): Category | null {
+  if (clicked === selected || clicked === active?.category) return null
+  return clicked
+}
+
+/** [시작] 버튼 활성 조건: 준비된 분야가 있고, 그 분야가 이미 진행 중이 아니어야 한다. */
+export function canStart(selected: Category | null, active: ActiveSession | null): boolean {
+  return selected !== null && selected !== active?.category
+}
+
 /** 앱 시작 시: 남아 있는 active 는 비정상 종료의 흔적이므로 마지막 heartbeat 시각으로 마감한다. */
 export function recover(state: TimerState): TimerState {
   if (!state.active) return state

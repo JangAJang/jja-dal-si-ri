@@ -31,7 +31,7 @@ flowchart LR
 ```
 
 ## 컴포넌트
-- **타이머 규칙** — 분야 전환 시 자동 마감, 종료, 비정상 종료 복구, 구간 집계, 시:분:초 포맷 — `src/shared/timer.ts`
+- **타이머 규칙** — 분야 전환 시 자동 마감, 종료, 비정상 종료 복구, 구간 집계, 시:분:초 포맷, 준비 선택 규칙(`select`/`canStart`) — `src/shared/timer.ts`
 - **IPC 채널** — main·preload가 공유하는 채널 이름 — `src/shared/ipc.ts`
 - **TimerService** — 상태 소유, IPC 핸들러, 30초 heartbeat, 절전 시 마감, 종료 시 마감 — `src/main/timerService.ts`
 - **store** — 로컬 JSON 읽기/원자적 쓰기, 기기 ID 발급 — `src/main/store.ts`
@@ -39,10 +39,10 @@ flowchart LR
 - **트레이** — 열기/종료 메뉴, 툴팁에 현재 분야·경과 시간(1초 갱신) — `src/main/tray.ts`
 - **문구** — 분야 이름·화면·트레이·대화상자 문구, 상태 요약(`statusText`) — `src/shared/labels.ts`
 - **preload API** — `getState`/`start`/`stop`/`onChanged` — `src/preload/index.ts`, 타입 `index.d.ts`
-- **타이머 화면** — 현재 분야·경과 시간, 시작 버튼 3개·종료, 오늘 합계 — `src/renderer/src/App.tsx`
+- **타이머 화면** — 현재 상태(대기/준비/진행 중)·경과 시간, 분야 버튼 3개(준비)·시작·종료, 오늘 합계. 준비 선택값은 이 화면의 로컬 상태 — `src/renderer/src/App.tsx`
 
 ## 데이터 흐름
-1. 사용자가 "쉼 시작"을 누르면 `window.api.start('break')` → IPC `timer:start`.
+1. 사용자가 [쉼]으로 준비한 뒤 [시작]을 누르면 `window.api.start('break')` → IPC `timer:start`. (준비 단계는 화면 안에서만 일어나고 main 은 모른다.)
 2. `TimerService`가 `timer.start()`로 진행 중이던 기록을 그 시각으로 마감하고 새 기록을 연 뒤 `store.save()`로 파일에 쓴다.
 3. 모든 창에 `timer:changed`로 새 상태를 보내고, 화면은 `now - startedAt`과 `totalsBetween()`으로 표시한다.
 4. 다음 실행 때 파일에 `active`가 남아 있으면(비정상 종료) `timer.recover()`가 마지막 heartbeat 시각으로 마감한다.

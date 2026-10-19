@@ -64,10 +64,27 @@ body {
   font-weight: 300;
 }
 
+.current-next {
+  min-height: 1.2em;
+  font-size: 13px;
+  color: var(--cat, var(--muted));
+}
+
 .controls {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  display: flex;
+  flex-direction: column;
   gap: 8px;
+}
+.categories,
+.actions {
+  display: grid;
+  gap: 8px;
+}
+.categories {
+  grid-template-columns: repeat(3, 1fr);
+}
+.actions {
+  grid-template-columns: repeat(2, 1fr);
 }
 .controls button {
   padding: 10px 0;
@@ -78,21 +95,28 @@ body {
   font: inherit;
   cursor: pointer;
 }
-.controls .start {
+.controls button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+/* 분야 버튼: 기본은 테두리, 준비(선택)는 옅은 채움, 진행 중은 진한 채움 */
+.controls .category {
   border-color: var(--cat);
   color: var(--cat);
 }
-.controls .start:disabled {
+.controls .category.is-selected {
+  background: color-mix(in srgb, var(--cat) 18%, transparent);
+  font-weight: 600;
+}
+.controls .category.is-running {
   background: var(--cat);
   color: #fff;
-  cursor: default;
 }
-.controls .stop {
-  grid-column: 1 / -1;
-}
-.controls .stop:disabled {
-  opacity: 0.4;
-  cursor: default;
+.controls .go:not(:disabled) {
+  background: var(--cat, var(--fg));
+  border-color: var(--cat, var(--fg));
+  color: #fff;
+  font-weight: 600;
 }
 
 .today h2 {
