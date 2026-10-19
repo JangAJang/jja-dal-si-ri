@@ -26,6 +26,8 @@
 - **타이머 규칙은 `src/shared/timer.ts`의 순수 함수로만 바꾼다.** main·renderer에 시간 계산을 따로 쓰지 않는다. 바꾸면 `timer.test.ts`도 함께 고친다.
 - **상태 변경은 `TimerService`를 통해서만.** 렌더러는 IPC로 요청하고 `IPC.changed` 브로드캐스트로 받는다 (창이 여럿이어도 상태가 하나).
 - 경과 시간은 `now - startedAt`으로 계산한다. 1초마다 더하는 카운터를 만들지 않는다.
+- **시각은 epoch ms(UTC 기준 절대 시각)로만 저장한다.** 날짜·시간대 문자열을 저장하지 않는다. 날짜 나누기(오늘·이번 주·이번 달·일별)는 보는 기기의 현지 시간대로, `src/shared/stats.ts`·`timer.ts`의 함수만 쓴다.
+- **날짜를 옮길 때 `24 * 60 * 60 * 1000`을 더하지 않는다** — 서머타임 날은 23·25시간이다. `nextDay()`(setDate) / `setMonth`를 쓴다. 날짜 계산을 바꾸면 `calendar.test.ts`(여러 시간대·윤년·서머타임)가 통과해야 한다.
 - `src/shared/`에서 Electron·Node API를 import하지 않는다 (렌더러에서도 쓰기 때문).
 - 저장 형식(`StoreData`, `version: 1`)을 바꾸면 기존 사용자 파일을 읽는 변환 코드를 함께 넣는다.
 - 구글 OAuth 키를 코드·설정 파일·워크플로에 넣지 않는다 — 사용자가 앱에서 직접 입력한다 (`docs/design.md`).

@@ -33,6 +33,12 @@
   --halt: #3a4a42;
   --halt-edge: #1f2a25;
   --led-off: #7f9a8c;
+  /* 차트 막대 색 (#6): 키 색은 밝아서 막대로 쓰면 안 보인다. 같은 색상의 진한 단계를
+     dataviz 검증 스크립트로 확인(밝기·채도·색각이상 구분·대비 3:1 모두 통과, 바탕 --panel) */
+  --panel: #f6f4ee;
+  --work-ink: #b07d12;
+  --break-ink: #2f7fae;
+  --study-ink: #d2402a;
 
   --sans: 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif;
 }
@@ -40,14 +46,17 @@
 .cat-work {
   --cat: var(--work);
   --cat-edge: var(--work-edge);
+  --cat-ink: var(--work-ink);
 }
 .cat-break {
   --cat: var(--break);
   --cat-edge: var(--break-edge);
+  --cat-ink: var(--break-ink);
 }
 .cat-study {
   --cat: var(--study);
   --cat-edge: var(--study-edge);
+  --cat-ink: var(--study-ink);
 }
 
 * {
@@ -92,6 +101,34 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+.tabs,
+.segmented {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 10px;
+  background: var(--shell-shade);
+  box-shadow: inset 0 1px 0 var(--shell-edge);
+}
+.tabs button,
+.segmented button {
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--ink-soft);
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.tabs button {
+  padding: 5px 12px;
+}
+.tabs button.is-on,
+.segmented button.is-on {
+  background: var(--panel);
+  color: var(--ink);
+  box-shadow: 0 1px 0 var(--shell-edge);
 }
 .brand {
   font-size: 13px;
@@ -489,4 +526,216 @@ body[data-view='analog'] {
   .hover-keys {
     transition: none;
   }
+}
+
+/* ── 통계 (#6) ────────────────────────────────── */
+/* 통계는 창에 남은 높이를 채우고, 차트가 남는 만큼 늘고 줄어든다 (넘쳐서 스크롤 생기지 않게) */
+.stats {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+  min-height: 0;
+}
+.panel.daily {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+.segmented button {
+  flex: 1;
+  padding: 6px 0;
+}
+.custom-range {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+.custom-range input {
+  min-width: 0;
+  flex: 1;
+  padding: 4px 6px;
+  border: 2px solid var(--shell-edge);
+  border-radius: 7px;
+  background: var(--panel);
+  color: var(--ink);
+  font: inherit;
+  font-size: 12px;
+}
+/* 본체 위에 올려둔 종이 패널 — 차트의 바탕(--panel) */
+.panel {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--panel);
+  box-shadow: 0 2px 0 var(--shell-edge);
+}
+.panel h2 {
+  margin-bottom: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--ink-soft);
+}
+.empty {
+  padding: 12px 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  text-align: center;
+}
+.swatch {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  margin-right: 6px;
+  border-radius: 2px;
+  background: var(--cat-ink);
+}
+
+/* 비율 막대: 조각 사이 2px 틈, 양 끝만 둥글게 */
+.ratio {
+  display: flex;
+  gap: 2px;
+  height: 12px;
+  margin-bottom: 10px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--shell-shade);
+}
+.ratio-seg {
+  flex-basis: 0;
+  background: var(--cat-ink);
+}
+.totals-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.totals-table th {
+  text-align: left;
+  font-weight: 700;
+}
+.totals-table td {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+.totals-table th,
+.totals-table td {
+  padding: 2px 0;
+}
+.totals-table .pct {
+  width: 3.2em;
+  color: var(--ink-soft);
+}
+.totals-table .sum th,
+.totals-table .sum td {
+  padding-top: 6px;
+  border-top: 1px solid var(--keycap-edge);
+  font-weight: 800;
+}
+
+/* 날마다 누적 막대 */
+.chart {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+}
+.chart-plot {
+  position: relative;
+  flex: 1;
+  min-height: 56px;
+  border-top: 1px dashed var(--keycap-edge);
+  border-bottom: 1px solid var(--ink-soft);
+}
+.chart-max {
+  position: absolute;
+  top: -8px;
+  left: 0;
+  padding-right: 4px;
+  background: var(--panel);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+.chart-cols,
+.chart-ticks {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+}
+.chart-cols {
+  height: 100%;
+  padding-top: 10px;
+}
+.chart-col {
+  display: flex;
+  align-items: flex-end;
+  height: 100%;
+  border-radius: 4px 4px 0 0;
+}
+.chart-col.is-hovered {
+  background: rgba(34, 48, 42, 0.06);
+}
+/* 아래→위 = 일·쉼·공부. 조각 사이 2px 틈, 맨 위만 둥글게 */
+.chart-stack {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 2px;
+  width: 100%;
+  border-radius: 4px 4px 0 0;
+  overflow: hidden;
+}
+.chart-seg {
+  flex-basis: 0;
+  min-height: 1px;
+  background: var(--cat-ink);
+}
+.chart-ticks {
+  margin-top: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--ink-soft);
+  text-align: center;
+}
+.chart-ticks .is-today {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.chart-tip {
+  position: absolute;
+  bottom: calc(100% - 6px);
+  transform: translateX(-50%);
+  display: grid;
+  gap: 2px;
+  min-width: 128px;
+  padding: 7px 9px;
+  border-radius: 8px;
+  background: var(--ink);
+  color: var(--panel);
+  font-size: 11px;
+  pointer-events: none;
+  z-index: 1;
+}
+.chart-tip strong {
+  margin-bottom: 2px;
+}
+.tip-row {
+  display: flex;
+  align-items: center;
+}
+.tip-row em {
+  margin-left: auto;
+  font-style: normal;
+  font-variant-numeric: tabular-nums;
+}
+.tip-row .swatch {
+  box-shadow: 0 0 0 1px var(--panel);
 }

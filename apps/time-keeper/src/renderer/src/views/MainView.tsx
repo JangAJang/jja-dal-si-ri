@@ -11,8 +11,8 @@ import { IconAnalog, IconDigital, IconPin } from '../components/Icons'
 import { Lcd } from '../components/Lcd'
 import { TimerControls } from '../components/TimerControls'
 import { useSelection } from '../hooks'
-
-const DAY_MS = 24 * 60 * 60 * 1000
+import { nextDay } from '../../../shared/stats'
+import { StatsView } from './StatsView'
 
 /** 이 창을 항상 위에 띄우기 토글. */
 function PinButton(): React.JSX.Element {
@@ -33,17 +33,35 @@ function PinButton(): React.JSX.Element {
 }
 
 export function MainView({ state, now }: { state: TimerState; now: number }): React.JSX.Element {
+  const [tab, setTab] = useState<'timer' | 'stats'>('timer')
   const selection = useSelection(state)
   const { selected } = selection
   const active = state.active
   const today = startOfDay(now)
-  const totals = totalsBetween(state, today, today + DAY_MS, now)
+  const totals = totalsBetween(state, today, nextDay(today), now)
   const longest = Math.max(...CATEGORIES.map((c) => totals[c]))
 
   return (
     <main className="device">
       <header className="device-top">
-        <span className="brand">{TEXT.appName}</span>
+        <div className="tabs" role="tablist">
+          <button
+            role="tab"
+            aria-selected={tab === 'timer'}
+            className={tab === 'timer' ? 'is-on' : ''}
+            onClick={() => setTab('timer')}
+          >
+            {TEXT.tabTimer}
+          </button>
+          <button
+            role="tab"
+            aria-selected={tab === 'stats'}
+            className={tab === 'stats' ? 'is-on' : ''}
+            onClick={() => setTab('stats')}
+          >
+            {TEXT.tabStats}
+          </button>
+        </div>
         <nav className="nubs">
           <button
             className="nub"
@@ -63,29 +81,35 @@ export function MainView({ state, now }: { state: TimerState; now: number }): Re
         </nav>
       </header>
 
-      <Lcd
-        label={headline(active, selected)}
-        time={formatHMS(active ? now - active.startedAt : 0)}
-        note={active && selected ? TEXT.nextUp(CATEGORY_READY[selected]) : undefined}
-      />
+      {tab === 'stats' ? (
+        <StatsView state={state} now={now} />
+      ) : (
+        <>
+          <Lcd
+            label={headline(active, selected)}
+            time={formatHMS(active ? now - active.startedAt : 0)}
+            note={active && selected ? TEXT.nextUp(CATEGORY_READY[selected]) : undefined}
+          />
 
-      <TimerControls active={active} selection={selection} />
+          <TimerControls active={active} selection={selection} />
 
-      <section className="report">
-        <h2>{TEXT.today}</h2>
-        {CATEGORIES.map((c) => (
-          <div key={c} className={`report-row cat-${c}`}>
-            <span className="report-name">{CATEGORY_LABEL[c]}</span>
-            <span className="meter" aria-hidden>
-              <span
-                className="meter-fill"
-                style={{ width: longest > 0 ? `${(totals[c] / longest) * 100}%` : '0%' }}
-              />
-            </span>
-            <span className="report-time">{formatHMS(totals[c])}</span>
-          </div>
-        ))}
-      </section>
+          <section className="report">
+            <h2>{TEXT.today}</h2>
+            {CATEGORIES.map((c) => (
+              <div key={c} className={`report-row cat-${c}`}>
+                <span className="report-name">{CATEGORY_LABEL[c]}</span>
+                <span className="meter" aria-hidden>
+                  <span
+                    className="meter-fill"
+                    style={{ width: longest > 0 ? `${(totals[c] / longest) * 100}%` : '0%' }}
+                  />
+                </span>
+                <span className="report-time">{formatHMS(totals[c])}</span>
+              </div>
+            ))}
+          </section>
+        </>
+      )}
     </main>
   )
 }

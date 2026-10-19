@@ -38,6 +38,8 @@ flowchart LR
 - **앱 수명 관리** — 단일 인스턴스, 종료 확인(`requestQuit`), OS 종료 시 마감 — `src/main/index.ts`
 - **창 관리** — 기본/디지털 미니/아날로그 미니 창을 하나씩 만들어 두고 하나만 표시(`openView`), X = 숨기기, 항상 위, 미니 드래그 — `src/main/windows.ts`
 - **트레이** — 열기/종료 메뉴, 툴팁에 현재 분야·경과 시간(1초 갱신) — `src/main/tray.ts`
+- **통계 계산** — 기간(오늘/주/월/직접) 범위, 일별 합계, 비율 — `src/shared/stats.ts`
+- **통계 화면** — 기간 탭, 비율 막대 + 합계 표, 일별 누적 막대(호버 툴팁) — `src/renderer/src/views/StatsView.tsx`, `components/DailyChart.tsx`
 - **문구** — 분야 이름·화면·트레이·대화상자 문구, 상태 요약(`statusText`) — `src/shared/labels.ts`
 - **preload API** — `getState`/`start`/`stop`/`onChanged` — `src/preload/index.ts`, 타입 `index.d.ts`
 - **화면** — `App.tsx`가 URL 해시(#main/#digital/#analog)로 `views/`의 화면을 고른다. LCD·키는 `components/`를 세 화면이 함께 쓴다. 준비 선택값은 창마다의 로컬 상태이고, 진행 기록이 바뀌면 저절로 풀린다(`hooks.ts > useSelection`)
@@ -54,6 +56,7 @@ flowchart LR
 - (예정) 사용자 본인의 Google Drive — 기기별 파일 동기화, #7
 
 ## 주요 결정 · 제약
+- **저장은 UTC 기준 절대 시각, 날짜는 보는 곳의 시간대로** (사용자 확인) — 기록의 시작·끝은 epoch ms(1970-01-01 00:00 UTC부터의 밀리초)로만 저장해 기기·시간대와 무관하다. "오늘", "이번 주", 일별 막대처럼 날짜로 나누는 일은 화면에 보여줄 때 그 기기의 현지 시간대로 한다. 날짜 이동은 달력 단위(`setDate`/`setMonth`)라 윤년·월 길이·서머타임은 OS 시간대 데이터가 처리한다. 여러 시간대 테스트: `src/shared/calendar.test.ts`.
 - **데스크톱 앱 (Electron + React)** — 서버 없이 앱만 나눠 주고 각자 쓰는 것이 목적(사용자 결정). 화면은 레포 표준 React+Vite+TS를 유지하고 창 껍데기만 Electron. 레포 규칙의 데스크톱 예외(#1).
 - **상태는 main이 단독 소유** — 기본·미니 창이 동시에 떠도(#5) 상태가 하나여야 하고, 종료·절전 이벤트는 main에서만 받을 수 있다.
 - **로컬 우선 저장** — 오프라인·비로그인에서도 동작해야 한다(사용자 결정). 동기화는 로컬 파일을 올리는 부가 기능이다.

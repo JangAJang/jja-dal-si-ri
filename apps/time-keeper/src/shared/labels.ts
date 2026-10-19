@@ -1,3 +1,4 @@
+import type { Period } from './stats'
 import { formatHMS, type ActiveSession, type Category } from './timer'
 
 // 화면·트레이 문구. main 과 renderer 가 함께 쓴다.
@@ -32,6 +33,16 @@ const QUIT_INTERRUPT: Record<Category, string> = {
   study: '잠깐, 뇌 키우던 중이잖아!'
 }
 
+/** Date.getDay() 순서 (일요일 = 0). */
+export const WEEKDAY = ['일', '월', '화', '수', '목', '금', '토']
+
+export const PERIOD_LABEL: Record<Period, string> = {
+  today: '오늘',
+  week: '이번 주',
+  month: '이번 달',
+  custom: '직접'
+}
+
 export const TEXT = {
   appName: '짜달시리 타이머',
   idle: '멍 때리는 중',
@@ -50,6 +61,20 @@ export const TEXT = {
   nextUp: (ready: string): string => `다음: ${ready}`,
   startShort: '▶',
   stopShort: '■',
+  // 통계 (#6)
+  tabTimer: '타이머',
+  tabStats: '통계',
+  statsTotal: '합계',
+  statsEmpty: '이 기간엔 기록이 없어. 가보자고!',
+  statsDaily: '날마다',
+  statsTooLong: '두 달이 넘는 기간은 합계만 보여줘',
+  customFrom: '부터',
+  customTo: '까지',
+  hours: (h: number): string => `${h}시간`,
+  dayTitle: (t: number): string => {
+    const d = new Date(t)
+    return `${d.getMonth() + 1}월 ${d.getDate()}일 (${WEEKDAY[d.getDay()]})`
+  },
   quitConfirmTitle: '진짜 끌 거야?',
   quitConfirmMessage: (category: Category): string => QUIT_INTERRUPT[category],
   quitConfirmDetail: '끄면 지금까지만 기록돼.',
