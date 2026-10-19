@@ -1,0 +1,51 @@
+# time-keeper 설치 파일 빌드·배포.
+# 태그 time-keeper/v* 를 푸시하면 Windows(.exe)·macOS(.dmg) 를 빌드해 GitHub Releases 에 올린다.
+name: time-keeper release
+
+on:
+  push:
+    tags:
+      - 'time-keeper/v*'
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    working-directory: apps/time-keeper
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            script: build:win
+            files: apps/time-keeper/dist/*.exe
+          - os: macos-latest
+            script: build:mac
+            files: apps/time-keeper/dist/*.dmg
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/time-keeper/package-lock.json
+
+      - run: npm ci
+
+      - run: npm test
+
+      # 서명하지 않는다 (ARCHITECTURE.md > 주요 결정). 인증서 자동 탐색을 끈다.
+      - run: npm run ${{ matrix.script }} -- --publish never
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          name: 짜달시리 타이머 ${{ github.ref_name }}
+          files: ${{ matrix.files }}
