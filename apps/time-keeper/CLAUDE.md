@@ -5,10 +5,10 @@
 ## 디렉토리 지도
 | 경로 | 역할 |
 |------|------|
-| `src/shared/` | main·renderer 공용 순수 로직. `timer.ts`(타이머 규칙·집계), `labels.ts`(화면·트레이 문구), `ipc.ts`(채널 이름), `view.ts`(창 종류 main/digital/analog) |
-| `src/main/` | Electron main 프로세스. `index.ts`(앱 수명·단일 인스턴스·종료 흐름), `windows.ts`(기본·미니 창 생성/전환·항상 위·미니 드래그), `timerService.ts`(타이머 상태의 유일한 소유자), `tray.ts`(트레이), `store.ts`(로컬 JSON 저장) |
+| `src/shared/` | main·renderer 공용 순수 로직. `timer.ts`(타이머 규칙·집계), `labels.ts`(화면·트레이 문구), `ipc.ts`(채널 이름), `view.ts`(창 종류 main/digital/analog), `stats.ts`(기간·일별 집계), `settings.ts`(기기별 설정 형식·검증), `theme.ts`(본체 색 → 테두리·글자색) |
+| `src/main/` | Electron main 프로세스. `index.ts`(앱 수명·단일 인스턴스·종료 흐름), `windows.ts`(기본·미니 창 생성/전환·항상 위·미니 드래그), `timerService.ts`(타이머 상태의 유일한 소유자), `tray.ts`(트레이), `store.ts`(로컬 JSON 저장), `settingsService.ts`(기기별 설정 저장·방송) |
 | `src/preload/` | 렌더러에 `window.api` 노출. 타입은 `index.d.ts` |
-| `src/renderer/src/` | React 화면. `App.tsx`(URL 해시로 화면 고르기), `views/`(MainView·DigitalMini·AnalogMini), `components/`(Lcd·TimerControls·Icons), `hooks.ts`(상태 구독·준비 선택·미니 드래그), `assets/main.css`(디자인 토큰·전체 스타일), `assets/fonts/`(DSEG7 LCD 글꼴, OFL) |
+| `src/renderer/src/` | React 화면. `App.tsx`(URL 해시로 화면 고르기), `views/`(MainView·StatsView·SettingsView·DigitalMini·AnalogMini), `components/`(Lcd·TimerControls·Icons), `hooks.ts`(상태 구독·준비 선택·미니 드래그), `assets/main.css`(디자인 토큰·전체 스타일), `assets/fonts/`(DSEG7 LCD 글꼴, OFL) |
 | `docs/design.md` | 0.1.0 합의 설계와 기능별 이슈 번호 |
 | `docs/runbooks/` | 반복 작업 절차 |
 | `electron-builder.yml` | 설치 파일 설정 (appId `com.muhayu.timekeeper`) |
@@ -36,6 +36,8 @@
 - 창 닫기(X)는 숨기기다. 창을 실제로 닫으려면 `markQuitting()` 이후여야 한다 (`src/main/windows.ts`).
 - **창은 `openView(mode)`로만 띄운다.** 한 번에 하나의 창만 보이게 하는 규칙이 거기 있다. 새 창 종류는 `SPECS`와 `src/shared/view.ts`에 추가한다.
 - 미니 창에 CSS `-webkit-app-region: drag`를 쓰지 않는다 — Windows에서 더블클릭을 삼킨다. 드래그는 `useMiniWindow()`(IPC `window:dragStart/End`)로 한다.
+- **설정과 기록은 다른 파일이다.** 설정(본체 색·성적표 접힘·언어)은 기기별 `userData/settings.json`, 기록은 `time-keeper-data.json`(동기화 대상). 새 설정 항목은 `src/shared/settings.ts`의 `Settings`·`normalizeSettings`에 추가하고 `window.api.setSettings({ ... })`로 바꾼다.
+- **본체 색은 사용자가 바꾼다.** `--shell`·`--ink` 등은 `App.tsx`가 `shellTokens()`로 덮어쓴다. 늘 밝은 면(키·패널·선택된 탭·다이얼 판) 위 글자는 `--panel-ink`를 써야 어두운 본체에서도 보인다 — 새 밝은 면을 만들면 `main.css` 맨 아래 "본체 색과 무관한 밝은 면" 목록에 넣는다.
 - **디자인은 레트로 주방 타이머**(`docs/design.md > 디자인`). 색·크기는 `main.css` 맨 위 토큰을 쓰고 새 색을 즉석에서 만들지 않는다. 분야 색은 `.cat-*`의 `--cat`/`--cat-edge`.
 
 ## 더 볼 문서 (필요할 때만)

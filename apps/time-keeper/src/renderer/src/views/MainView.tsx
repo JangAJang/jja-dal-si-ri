@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   CATEGORIES,
   formatHMS,
@@ -10,9 +10,11 @@ import { CATEGORY_LABEL, CATEGORY_READY, TEXT, headline } from '../../../shared/
 import { IconAnalog, IconDigital, IconPin } from '../components/Icons'
 import { Lcd } from '../components/Lcd'
 import { TimerControls } from '../components/TimerControls'
-import { useSelection } from '../hooks'
+import { useFitHeight, useSelection } from '../hooks'
 import { nextDay } from '../../../shared/stats'
 import { StatsView } from './StatsView'
+import { SettingsView } from './SettingsView'
+import type { Settings } from '../../../shared/settings'
 
 /** 이 창을 항상 위에 띄우기 토글. */
 function PinButton(): React.JSX.Element {
@@ -32,8 +34,27 @@ function PinButton(): React.JSX.Element {
   )
 }
 
-export function MainView({ state, now }: { state: TimerState; now: number }): React.JSX.Element {
-  const [tab, setTab] = useState<'timer' | 'stats'>('timer')
+type Tab = 'timer' | 'stats' | 'settings'
+
+export function MainView({
+  state,
+  settings,
+  now
+}: {
+  state: TimerState
+  settings: Settings
+  now: number
+}): React.JSX.Element {
+  const [tab, setTab] = useState<Tab>('timer')
+  const tabs: Array<[Tab, string]> = [
+    ['timer', TEXT.tabTimer],
+    ['stats', TEXT.tabStats],
+    ['settings', TEXT.tabSettings]
+  ]
+  const collapsed = settings.reportCollapsed
+  const deviceRef = useRef<HTMLElement>(null)
+  // 타이머 탭에서 성적표를 접으면 창도 내용만큼 줄인다. 통계·설정 탭은 공간이 필요해 원래 높이.
+  useFitHeight(deviceRef, tab === 'timer' && collapsed)
   const selection = useSelection(state)
   const { selected } = selection
   const active = state.active
@@ -42,25 +63,20 @@ export function MainView({ state, now }: { state: TimerState; now: number }): Re
   const longest = Math.max(...CATEGORIES.map((c) => totals[c]))
 
   return (
-    <main className="device">
+    <main className="device" ref={deviceRef}>
       <header className="device-top">
         <div className="tabs" role="tablist">
-          <button
-            role="tab"
-            aria-selected={tab === 'timer'}
-            className={tab === 'timer' ? 'is-on' : ''}
-            onClick={() => setTab('timer')}
-          >
-            {TEXT.tabTimer}
-          </button>
-          <button
-            role="tab"
-            aria-selected={tab === 'stats'}
-            className={tab === 'stats' ? 'is-on' : ''}
-            onClick={() => setTab('stats')}
-          >
-            {TEXT.tabStats}
-          </button>
+          {tabs.map(([t, label]) => (
+            <button
+              key={t}
+              role="tab"
+              aria-selected={tab === t}
+              className={tab === t ? 'is-on' : ''}
+              onClick={() => setTab(t)}
+            >
+              {label}
+            </button>
+          ))}
         </div>
         <nav className="nubs">
           <button
@@ -83,6 +99,8 @@ export function MainView({ state, now }: { state: TimerState; now: number }): Re
 
       {tab === 'stats' ? (
         <StatsView state={state} now={now} />
+      ) : tab === 'settings' ? (
+        <SettingsView settings={settings} />
       ) : (
         <>
           <Lcd
@@ -93,20 +111,33 @@ export function MainView({ state, now }: { state: TimerState; now: number }): Re
 
           <TimerControls active={active} selection={selection} />
 
-          <section className="report">
-            <h2>{TEXT.today}</h2>
-            {CATEGORIES.map((c) => (
-              <div key={c} className={`report-row cat-${c}`}>
-                <span className="report-name">{CATEGORY_LABEL[c]}</span>
-                <span className="meter" aria-hidden>
-                  <span
-                    className="meter-fill"
-                    style={{ width: longest > 0 ? `${(totals[c] / longest) * 100}%` : '0%' }}
-                  />
+          <section className={collapsed ? 'report is-collapsed' : 'report'}>
+            <div className="report-head">
+              <h2>{TEXT.today}</h2>
+              <button
+                className="fold"
+                aria-expanded={!collapsed}
+                onClick={() => window.api.setSettings({ reportCollapsed: !collapsed })}
+              >
+                {collapsed ? TEXT.reportExpand : TEXT.reportCollapse}
+                <span className="fold-mark" aria-hidden>
+                  {collapsed ? '▸' : '▾'}
                 </span>
-                <span className="report-time">{formatHMS(totals[c])}</span>
-              </div>
-            ))}
+              </button>
+            </div>
+            {!collapsed &&
+              CATEGORIES.map((c) => (
+                <div key={c} className={`report-row cat-${c}`}>
+                  <span className="report-name">{CATEGORY_LABEL[c]}</span>
+                  <span className="meter" aria-hidden>
+                    <span
+                      className="meter-fill"
+                      style={{ width: longest > 0 ? `${(totals[c] / longest) * 100}%` : '0%' }}
+                    />
+                  </span>
+                  <span className="report-time">{formatHMS(totals[c])}</span>
+                </div>
+              ))}
           </section>
         </>
       )}

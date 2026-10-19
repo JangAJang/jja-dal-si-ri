@@ -36,6 +36,9 @@ const QUIT_INTERRUPT: Record<Category, string> = {
 /** Date.getDay() 순서 (일요일 = 0). */
 export const WEEKDAY = ['일', '월', '화', '수', '목', '금', '토']
 
+/** theme.ts 의 SHELL_PRESETS 와 같은 순서 */
+export const SHELL_PRESET_NAME = ['민트', '버터', '하늘', '라벤더', '복숭아', '차콜']
+
 export const PERIOD_LABEL: Record<Period, string> = {
   today: '오늘',
   week: '이번 주',
@@ -64,6 +67,12 @@ export const TEXT = {
   // 통계 (#6)
   tabTimer: '타이머',
   tabStats: '통계',
+  tabSettings: '설정',
+  // 설정 (#21)
+  settingsShell: '본체 색',
+  settingsShellHint: '액정이랑 버튼 색은 그대로야',
+  reportCollapse: '접기',
+  reportExpand: '펼치기',
   statsTotal: '합계',
   statsEmpty: '이 기간엔 기록이 없어. 가보자고!',
   statsDaily: '날마다',

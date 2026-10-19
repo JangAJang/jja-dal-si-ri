@@ -1,6 +1,7 @@
 import { app, dialog, powerMonitor } from 'electron'
 import { electronApp, optimizer } from '@electron-toolkit/utils'
 import { TEXT } from '../shared/labels'
+import { SettingsService } from './settingsService'
 import { TimerService } from './timerService'
 import { createTray } from './tray'
 import { initWindows, isQuitting, markQuitting, openView, visibleWindow } from './windows'
@@ -49,6 +50,8 @@ function onReady(): void {
 
   timerService = new TimerService()
   timerService.register()
+  const settingsService = new SettingsService()
+  settingsService.register()
 
   initWindows({ onSessionEnd: () => timerService.shutdown() })
   openView('main')
