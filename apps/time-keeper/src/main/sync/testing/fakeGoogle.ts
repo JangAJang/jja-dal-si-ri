@@ -12,6 +12,8 @@ interface FakeFile {
   parents: string[]
   content: string
   trashed: boolean
+  /** 만든 순서 (createdTime 대신) */
+  created?: number
 }
 
 export interface FakeGoogle {
@@ -105,15 +107,19 @@ export async function startFakeGoogle(opts: { validCode?: string } = {}): Promis
     if (url.pathname === '/drive/v3/files') {
       if (req.method === 'GET') {
         const q = url.searchParams.get('q') ?? ''
-        return json(200, {
-          files: [...files.values()]
-            .filter((f) => matches(q, f))
-            .map(({ id, name }) => ({ id, name }))
-        })
+        let found = [...files.values()].filter((f) => matches(q, f))
+        if (url.searchParams.get('orderBy') === 'createdTime') {
+          found = found.sort((a, b) => (a.created ?? 0) - (b.created ?? 0))
+        } else {
+          // 정렬을 안 주면 순서가 보장되지 않는다 — 일부러 뒤집어 그 가정에 기대는 코드를 드러낸다
+          found = found.reverse()
+        }
+        return json(200, { files: found.map(({ id, name }) => ({ id, name })) })
       }
       if (req.method === 'POST') {
         const meta = JSON.parse(body)
         const f: FakeFile = {
+          created: seq,
           id: newId('fo-'),
           name: meta.name,
           mimeType: meta.mimeType,
@@ -149,6 +155,14 @@ export async function startFakeGoogle(opts: { validCode?: string } = {}): Promis
         trashed: false
       }
       files.set(f.id, f)
+      return json(200, { id: f.id })
+    }
+    // 메타데이터 바꾸기 (휴지통으로)
+    const metaPatch = /^\/drive\/v3\/files\/([^/]+)$/.exec(url.pathname)
+    if (metaPatch && req.method === 'PATCH') {
+      const f = files.get(decodeURIComponent(metaPatch[1]))
+      if (!f) return json(404, { error: { code: 404 } })
+      if (JSON.parse(body).trashed === true) f.trashed = true
       return json(200, { id: f.id })
     }
     // 내용 바꾸기

@@ -66,7 +66,7 @@ function StatusLine({ status }: { status: SyncStatus }): React.JSX.Element {
 }
 
 /** 설정 탭의 구글 드라이브 동기화 (#7) */
-export function SyncPanel(): React.JSX.Element {
+export function SyncPanel({ autoHandoff }: { autoHandoff: boolean }): React.JSX.Element {
   const t = useT()
   const status = useSyncStatus()
 
@@ -88,6 +88,17 @@ export function SyncPanel(): React.JSX.Element {
               {t.syncError[status.error]}
             </p>
           )}
+          <label className="toggle">
+            <input
+              type="checkbox"
+              checked={autoHandoff}
+              onChange={(e) => window.api.setSettings({ autoHandoff: e.target.checked })}
+            />
+            <span>
+              <strong>{t.settingsAutoHandoff}</strong>
+              <small>{t.settingsAutoHandoffHint}</small>
+            </span>
+          </label>
           <div className="sync-actions">
             <button className="pill" onClick={() => window.api.syncDisconnect()}>
               {t.syncDisconnect}

@@ -1,11 +1,20 @@
 // 구글 드라이브 동기화 (#7) — Electron 쪽: 키 보관(safeStorage), 브라우저 로그인, 주기 실행, IPC.
 // 실제 동기화 한 바퀴는 SyncEngine, 토큰은 GoogleSession 이 한다 (둘 다 Electron 없이 테스트됨).
-import { BrowserWindow, app, ipcMain, safeStorage, shell } from 'electron'
+import { BrowserWindow, Notification, app, ipcMain, safeStorage, shell } from 'electron'
+import { hostname } from 'os'
 import { randomBytes } from 'crypto'
 import { existsSync, readFileSync, renameSync, rmSync, writeFileSync } from 'fs'
 import { join } from 'path'
 import { IPC } from '../../shared/ipc'
-import type { SyncErrorCode, SyncStatus } from '../../shared/sync'
+import {
+  handoffRequests,
+  incomingStop,
+  liveRemotes,
+  pruneStopRequests,
+  type StopRequest,
+  type SyncErrorCode,
+  type SyncStatus
+} from '../../shared/sync'
 import type { Session } from '../../shared/timer'
 import type { TimerService } from '../timerService'
 import type { SettingsService } from '../settingsService'
@@ -36,10 +45,10 @@ function endpoints(): { oauth: OAuthEndpoints; drive: DriveEndpoints } {
   }
 }
 
-/** 정기 동기화 간격 */
-const PERIOD_MS = 5 * 60_000
-/** 기록이 끝난 뒤 이만큼 기다렸다 올린다 (연달아 바꿀 때 한 번만) */
-const AFTER_CHANGE_MS = 15_000
+/** 정기 동기화 간격 — 다른 기기의 시작을 1분 안에 알아채려고 (내용이 같으면 올리지 않는다) */
+const PERIOD_MS = 60_000
+/** 시작·종료 뒤 이만큼 기다렸다 올린다 (연달아 바꿀 때 한 번만) */
+const AFTER_CHANGE_MS = 3_000
 
 interface Secrets {
   clientId: string
@@ -50,6 +59,8 @@ interface Secrets {
 const userFile = (name: string): string => join(app.getPath('userData'), name)
 const SECRETS_FILE = 'sync-secrets.bin'
 const REMOTE_CACHE_FILE = 'remote-sessions.json'
+/** 다른 기기에 보낸 끝내기 요청 (내 파일에 실어 올린다) */
+const OUTBOX_FILE = 'sync-outbox.json'
 
 /** 마지막 동기화 결과를 기기에 남겨 두는 형식 — 껐다 켜도, 오프라인이어도 보이게 */
 interface RemoteCache {
@@ -85,6 +96,7 @@ export class SyncService {
   private again = false
   private changeTimer: NodeJS.Timeout | null = null
   private cancelLogin: (() => void) | null = null
+  private outbox: StopRequest[] = []
 
   constructor(
     private readonly timer: TimerService,
@@ -99,6 +111,7 @@ export class SyncService {
     ipcMain.handle(IPC.syncNow, () => this.syncNow())
 
     this.loadRemoteCache()
+    this.loadOutbox()
     this.secrets = this.loadSecrets()
     if (this.secrets) {
       this.startSession(this.secrets)
@@ -193,6 +206,8 @@ export class SyncService {
     this.engine = null
     rmSync(userFile(SECRETS_FILE), { force: true })
     rmSync(userFile(REMOTE_CACHE_FILE), { force: true })
+    rmSync(userFile(OUTBOX_FILE), { force: true })
+    this.outbox = []
     this.timer.setRemoteSessions([])
     // 구글 쪽 권한도 철회 (실패해도 이 기기에서는 이미 끊김)
     if (token) {
@@ -231,8 +246,19 @@ export class SyncService {
     if (!engine || this.status.state === 'connecting') return
     this.setStatus({ state: 'syncing' })
     try {
-      const result = await engine.run(this.timer.ownSessions, Date.now())
+      const now = Date.now()
+      this.outbox = pruneStopRequests(this.outbox, now)
+      const result = await engine.run(
+        {
+          sessions: this.timer.ownSessions,
+          active: this.timer.active,
+          deviceName: hostname(),
+          stopRequests: this.outbox
+        },
+        now
+      )
       if (engine !== this.engine) return // 도중에 연결 끊김
+      this.applyHandoff(result.remoteFiles, now)
       this.timer.setRemoteSessions(result.remoteSessions)
       const syncedAt = Date.now()
       const cache: RemoteCache = {
@@ -250,6 +276,66 @@ export class SyncService {
     } catch (e) {
       if (engine !== this.engine) return
       this.setStatus({ state: 'error', error: classify(e) })
+    }
+  }
+
+  // ── 이어받기 ──────────────────────────────────────────
+  /**
+   * 1) 다른 기기가 "네 기록 끝내" 요청을 보냈으면 그 시각으로 끝낸다.
+   * 2) 내가 나중에 시작했는데 다른 기기 타이머가 아직 돌면 끝내기 요청을 보낸다 (설정이 켜져 있을 때).
+   */
+  private applyHandoff(remoteFiles: Parameters<typeof liveRemotes>[0], now: number): void {
+    const t = this.settings.messages
+    const deviceId = this.timer.deviceId
+
+    const incoming = incomingStop(remoteFiles, deviceId, this.timer.active)
+    const active = this.timer.active
+    if (incoming && active && this.timer.stopAt(active.id, incoming.endAt)) {
+      const time = new Date(incoming.endAt).toLocaleTimeString(this.settings.locale, {
+        hour: 'numeric',
+        minute: '2-digit'
+      })
+      this.notify(
+        t.handoffReceivedTitle,
+        t.handoffReceivedBody(incoming.fromDeviceName, t.category[active.category], time)
+      )
+    }
+
+    if (!this.settings.snapshot.autoHandoff) return
+    const live = liveRemotes(remoteFiles, deviceId, now)
+    const requests = handoffRequests(
+      { deviceId, active: this.timer.active },
+      live,
+      this.outbox,
+      now
+    )
+    if (requests.length === 0) return
+    this.outbox = [...this.outbox, ...requests]
+    writeAtomic(userFile(OUTBOX_FILE), JSON.stringify(this.outbox))
+    for (const r of requests) {
+      const remote = live.find((l) => l.deviceId === r.deviceId)
+      if (remote)
+        this.notify(
+          t.handoffSentTitle,
+          t.handoffSentBody(remote.deviceName, t.category[remote.active.category])
+        )
+    }
+    this.again = true // 요청을 바로 올리도록 한 바퀴 더
+  }
+
+  private notify(title: string, body: string): void {
+    if (Notification.isSupported()) new Notification({ title, body }).show()
+  }
+
+  private loadOutbox(): void {
+    try {
+      const path = userFile(OUTBOX_FILE)
+      if (existsSync(path)) {
+        const raw = JSON.parse(readFileSync(path, 'utf-8')) as StopRequest[]
+        this.outbox = Array.isArray(raw) ? raw : []
+      }
+    } catch {
+      this.outbox = []
     }
   }
 

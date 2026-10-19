@@ -58,7 +58,7 @@ export class DriveClient {
     return res
   }
 
-  private async list(q: string): Promise<DriveFile[]> {
+  private async list(q: string, orderBy?: string): Promise<DriveFile[]> {
     const files: DriveFile[] = []
     let pageToken: string | undefined
     do {
@@ -68,6 +68,7 @@ export class DriveClient {
         pageSize: '100',
         spaces: 'drive'
       })
+      if (orderBy) params.set('orderBy', orderBy)
       if (pageToken) params.set('pageToken', pageToken)
       const json = (await (await this.request(`${this.endpoints.api}/files?${params}`)).json()) as {
         files?: DriveFile[]
@@ -79,12 +80,18 @@ export class DriveClient {
     return files
   }
 
-  /** 이름이 같은 앱 폴더를 찾고 없으면 만든다 */
-  async ensureFolder(name: string): Promise<string> {
-    const found = await this.list(
-      `mimeType = ${quote(FOLDER_MIME)} and name = ${quote(name)} and trashed = false`
+  /**
+   * 이름이 같은 앱 폴더들, 먼저 만든 순서. 여러 기기가 처음에 동시에 폴더를 만들면 여러 개일 수 있다
+   * (드라이브에는 "없으면 만들기"를 한 번에 하는 방법이 없다).
+   */
+  findFolders(name: string): Promise<DriveFile[]> {
+    return this.list(
+      `mimeType = ${quote(FOLDER_MIME)} and name = ${quote(name)} and trashed = false`,
+      'createdTime'
     )
-    if (found.length > 0) return found[0].id
+  }
+
+  async createFolder(name: string): Promise<string> {
     const res = await this.request(`${this.endpoints.api}/files?fields=id`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -121,6 +128,15 @@ export class DriveClient {
       }
     )
     return ((await res.json()) as { id: string }).id
+  }
+
+  /** 휴지통으로 (이 앱이 만든 파일만 가능 — drive.file) */
+  async trash(fileId: string): Promise<void> {
+    await this.request(`${this.endpoints.api}/files/${encodeURIComponent(fileId)}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ trashed: true })
+    })
   }
 
   /** 있는 파일의 내용만 바꾸기 */

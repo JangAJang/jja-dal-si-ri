@@ -95,7 +95,7 @@ export function SettingsView({ settings }: { settings: SettingsSnapshot }): Reac
     <div className="settings">
       <ShellColor hex={settings.shellColor} />
       <Language value={settings.locale} />
-      <SyncPanel />
+      <SyncPanel autoHandoff={settings.autoHandoff} />
     </div>
   )
 }

@@ -969,3 +969,27 @@ body[data-view='analog'] {
 .settings::-webkit-scrollbar-track {
   background: transparent;
 }
+
+/* 켜기/끄기 줄 (자동 이어받기 등) */
+.toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 4px 0 10px;
+  cursor: pointer;
+}
+.toggle input {
+  margin-top: 2px;
+  accent-color: var(--panel-ink);
+}
+.toggle span {
+  display: grid;
+  gap: 2px;
+}
+.toggle strong {
+  font-size: 12px;
+}
+.toggle small {
+  font-size: 11px;
+  color: var(--panel-ink-soft);
+}

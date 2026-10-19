@@ -17,6 +17,11 @@ describe('normalizeSettings', () => {
     expect(normalizeSettings({ locale: 'fr' }).locale).toBe('auto')
   })
 
+  it('자동 이어받기는 기본 켜짐', () => {
+    expect(normalizeSettings({}).autoHandoff).toBe(true)
+    expect(normalizeSettings({ autoHandoff: false }).autoHandoff).toBe(false)
+  })
+
   it('타입이 다른 값은 무시', () => {
     expect(normalizeSettings({ reportCollapsed: 'yes' }).reportCollapsed).toBe(false)
     expect(normalizeSettings({ reportCollapsed: true }).reportCollapsed).toBe(true)

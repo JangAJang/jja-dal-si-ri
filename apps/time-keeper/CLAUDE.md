@@ -44,7 +44,8 @@
 - **권한은 `drive.file` 하나만.** 범위를 늘리면 구글 심사 대상이 된다(`docs/google-drive-setup.md`).
 - **OAuth 키를 코드·설정 파일·워크플로에 넣지 않는다.** 사용자가 앱에서 입력하고 `safeStorage`로 암호화해 `userData/sync-secrets.bin`에 둔다.
 - **기기마다 자기 파일(`sessions-<deviceId>.json`)에만 쓴다.** 다른 기기 기록은 `TimerService.setRemoteSessions`로 읽기 전용으로 받고 저장·업로드하지 않는다.
-- 폴더·파일 ID 를 기억하지 않고 매번 찾는다 (휴지통에 들어간 폴더에 계속 쓰는 문제 방지).
+- 폴더·파일 ID 를 기억하지 않고 매번 찾는다 (휴지통에 들어간 폴더에 계속 쓰는 문제 방지). 같은 이름 폴더가 여러 개면 가장 먼저 만든 폴더에 쓰고 모든 폴더에서 읽는다.
+- **다른 기기 타이머를 직접 바꾸지 않는다.** 이어받기는 내 파일의 `stopRequests`로 요청하고 저쪽이 `incomingStop`으로 읽어 스스로 끝낸다. 규칙 변경은 `src/shared/sync.ts`와 `sync.test.ts`에서.
 - 개발 중 가짜 구글로 앱 전체를 돌리려면 `TK_FAKE_GOOGLE=<fakeGoogle 주소>` (설치본에서는 무시).
 
 ## 더 볼 문서 (필요할 때만)

@@ -12,6 +12,8 @@ export interface Settings {
   reportCollapsed: boolean
   /** 화면 언어. auto 는 시스템 언어를 따른다 (#8) */
   locale: LocalePreference
+  /** 다른 컴퓨터에서 도는 타이머를 여기서 시작할 때 자동으로 끝내기 (#7 이어받기) */
+  autoHandoff: boolean
 }
 
 /** main 이 렌더러에 보내는 설정: 저장된 값 + 실제로 쓸 언어(auto 를 풀어낸 값). */
@@ -23,7 +25,8 @@ export const DEFAULT_SETTINGS: Settings = {
   version: 1,
   shellColor: DEFAULT_SHELL,
   reportCollapsed: false,
-  locale: 'auto'
+  locale: 'auto',
+  autoHandoff: true
 }
 
 const LOCALE_PREFERENCES: readonly string[] = ['auto', ...LOCALES]
@@ -40,6 +43,7 @@ export function normalizeSettings(raw: unknown): Settings {
     locale:
       typeof o.locale === 'string' && LOCALE_PREFERENCES.includes(o.locale)
         ? (o.locale as LocalePreference)
-        : DEFAULT_SETTINGS.locale
+        : DEFAULT_SETTINGS.locale,
+    autoHandoff: typeof o.autoHandoff === 'boolean' ? o.autoHandoff : DEFAULT_SETTINGS.autoHandoff
   }
 }

@@ -76,6 +76,13 @@ export class TimerService {
     this.listeners.push(listener)
   }
 
+  /** 진행 중인 기록이 sessionId 이면 endedAt 으로 끝낸다 (다른 기기가 이어받았을 때 #7). 끝냈으면 true */
+  stopAt(sessionId: string, endedAt: number): boolean {
+    if (this.data.active?.id !== sessionId) return false
+    this.apply(timer.stop(this.data, endedAt))
+    return true
+  }
+
   private stopNow(): void {
     this.apply(timer.stop(this.data, Date.now()))
   }

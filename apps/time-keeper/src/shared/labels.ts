@@ -85,6 +85,13 @@ export interface Messages {
   /** 로그인 후 브라우저에 뜨는 페이지 문구 */
   syncBrowserOk: string
   syncBrowserFail: string
+  // 이어받기 (#7)
+  settingsAutoHandoff: string
+  settingsAutoHandoffHint: string
+  handoffSentTitle: string
+  handoffSentBody: (device: string, category: string) => string
+  handoffReceivedTitle: string
+  handoffReceivedBody: (device: string, category: string, time: string) => string
 }
 
 const KO_WEEKDAY = ['일', '월', '화', '수', '목', '금', '토']
@@ -174,7 +181,16 @@ export const ko: Messages = {
     drive: '구글 드라이브가 거절했어. 잠시 뒤에 다시 해볼게.'
   },
   syncBrowserOk: '연결됐어! 이 창은 닫아도 돼.',
-  syncBrowserFail: '연결이 안 됐어. 앱으로 돌아가서 다시 해줘.'
+  syncBrowserFail: '연결이 안 됐어. 앱으로 돌아가서 다시 해줘.',
+  settingsAutoHandoff: '다른 컴퓨터 타이머 자동으로 끄기',
+  settingsAutoHandoffHint:
+    '여기서 시작하면 다른 컴퓨터에서 돌던 건 그 시각에 끝내. 끄면 동시에 기록하고 다 합산해.',
+  handoffSentTitle: '이어받았어',
+  handoffSentBody: (device, category) =>
+    `${device}에서 돌던 '${category}' 기록은 여기서 시작할 때 끝냈어.`,
+  handoffReceivedTitle: '다른 컴퓨터가 이어받았어',
+  handoffReceivedBody: (device, category, time) =>
+    `${device}에서 시작해서 여기 '${category}' 기록은 ${time}에 끝냈어.`
 }
 
 const EN_WEEKDAY = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -279,7 +295,15 @@ export const en: Messages = {
     drive: 'Google Drive said no. I’ll try again in a bit.'
   },
   syncBrowserOk: 'Connected! You can close this tab.',
-  syncBrowserFail: 'Didn’t connect. Go back to the app and try again.'
+  syncBrowserFail: 'Didn’t connect. Go back to the app and try again.',
+  settingsAutoHandoff: 'Auto-stop timers on other computers',
+  settingsAutoHandoffHint:
+    'Start here and the one running elsewhere ends at that moment. Turn off to record on several computers at once (all counted).',
+  handoffSentTitle: 'Took over',
+  handoffSentBody: (device, category) => `Ended '${category}' on ${device} when you started here.`,
+  handoffReceivedTitle: 'Another computer took over',
+  handoffReceivedBody: (device, category, time) =>
+    `${device} started a timer, so '${category}' here ended at ${time}.`
 }
 
 export const MESSAGES: Record<Locale, Messages> = { ko, en }
