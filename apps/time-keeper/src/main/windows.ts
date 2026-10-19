@@ -24,6 +24,8 @@ const SPECS: Record<ViewMode, WindowSpec> = {
 }
 
 const windows = new Map<ViewMode, BrowserWindow>()
+/** 창을 만들 때의 내용 높이. 줄였다가(fitHeight) 되돌릴 때 기준 */
+const fullContentHeight = new WeakMap<BrowserWindow, number>()
 /** true 가 되면 창 닫기를 더 이상 막지 않는다 (실제 종료 진행 중). */
 let quitting = false
 let onSessionEnd: () => void = () => {}
@@ -114,6 +116,7 @@ function getOrCreate(mode: ViewMode): BrowserWindow {
   if (existing && !existing.isDestroyed()) return existing
   const win = createWindow(mode)
   windows.set(mode, win)
+  fullContentHeight.set(win, win.getContentSize()[1])
   return win
 }
 
@@ -161,6 +164,21 @@ function registerIpc(): void {
     const win = BrowserWindow.fromWebContents(e.sender)
     win?.setAlwaysOnTop(Boolean(value))
     return win?.isAlwaysOnTop() ?? false
+  })
+
+  // 창 높이를 내용에 맞춘다 (오늘의 성적표 접기). null 이면 처음 높이로. 처음보다 커지지는 않는다.
+  ipcMain.handle(IPC.fitHeight, (e, height: number | null) => {
+    const win = BrowserWindow.fromWebContents(e.sender)
+    if (!win) return
+    const full = fullContentHeight.get(win) ?? win.getContentSize()[1]
+    const target = height === null ? full : Math.round(Math.min(full, Math.max(200, height)))
+    const [width, current] = win.getContentSize()
+    if (current === target) return
+    // 크기 고정(resizable: false) 창은 setContentSize 가 무시되므로 잠깐 풀었다가 되돌린다
+    const resizable = win.isResizable()
+    win.setResizable(true)
+    win.setContentSize(width, target)
+    win.setResizable(resizable)
   })
 
   // 미니 창 드래그: 커서 위치를 따라 창을 옮긴다. CSS drag 영역을 쓰지 않는 이유는

@@ -17,6 +17,8 @@ export interface TimeKeeperApi {
   /** 미니 창 직접 드래그 시작/끝. */
   dragStart: () => void
   dragEnd: () => void
+  /** 이 창의 내용 높이를 맞춘다. null 이면 처음 높이로 (처음보다 커지지 않음). */
+  fitHeight: (height: number | null) => Promise<void>
   /** 기기별 설정. set 은 바꿀 항목만 넘기고, 정리된 전체 설정을 돌려받는다. */
   getSettings: () => Promise<Settings>
   setSettings: (patch: Partial<Settings>) => Promise<Settings>

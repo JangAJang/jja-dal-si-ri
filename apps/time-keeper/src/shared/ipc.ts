@@ -9,6 +9,7 @@ export const IPC = {
   setAlwaysOnTop: 'window:setAlwaysOnTop',
   dragStart: 'window:dragStart',
   dragEnd: 'window:dragEnd',
+  fitHeight: 'window:fitHeight',
   getSettings: 'settings:get',
   setSettings: 'settings:set',
   settingsChanged: 'settings:changed'

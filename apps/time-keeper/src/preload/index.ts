@@ -21,6 +21,7 @@ const api = {
     ipcRenderer.invoke(IPC.setAlwaysOnTop, value),
   dragStart: (): void => ipcRenderer.send(IPC.dragStart),
   dragEnd: (): void => ipcRenderer.send(IPC.dragEnd),
+  fitHeight: (height: number | null): Promise<void> => ipcRenderer.invoke(IPC.fitHeight, height),
   getSettings: (): Promise<Settings> => ipcRenderer.invoke(IPC.getSettings),
   setSettings: (patch: Partial<Settings>): Promise<Settings> =>
     ipcRenderer.invoke(IPC.setSettings, patch),

@@ -36,7 +36,7 @@ flowchart LR
 - **TimerService** — 상태 소유, IPC 핸들러, 30초 heartbeat, 절전 시 마감, 종료 시 마감 — `src/main/timerService.ts`
 - **store** — 로컬 JSON 읽기/원자적 쓰기, 기기 ID 발급 — `src/main/store.ts`
 - **앱 수명 관리** — 단일 인스턴스, 종료 확인(`requestQuit`), OS 종료 시 마감 — `src/main/index.ts`
-- **창 관리** — 기본/디지털 미니/아날로그 미니 창을 하나씩 만들어 두고 하나만 표시(`openView`), X = 숨기기, 항상 위, 미니 드래그 — `src/main/windows.ts`
+- **창 관리** — 기본/디지털 미니/아날로그 미니 창을 하나씩 만들어 두고 하나만 표시(`openView`), X = 숨기기, 항상 위, 미니 드래그, 내용에 맞춘 창 높이(`window:fitHeight`) — `src/main/windows.ts`
 - **트레이** — 열기/종료 메뉴, 툴팁에 현재 분야·경과 시간(1초 갱신) — `src/main/tray.ts`
 - **통계 계산** — 기간(오늘/주/월/직접) 범위, 일별 합계, 비율 — `src/shared/stats.ts`
 - **통계 화면** — 기간 탭, 비율 막대 + 합계 표, 일별 누적 막대(호버 툴팁) — `src/renderer/src/views/StatsView.tsx`, `components/DailyChart.tsx`

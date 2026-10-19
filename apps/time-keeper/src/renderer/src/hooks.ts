@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useState } from 'react'
 import { canStart, select, type Category, type TimerState } from '../../shared/timer'
 import type { Settings } from '../../shared/settings'
 
@@ -107,4 +107,25 @@ export function useSettings(): Settings | null {
     return window.api.onSettingsChanged(setSettings)
   }, [])
   return settings
+}
+
+/**
+ * shrink 가 true 면 창 높이를 ref 요소의 실제 내용(마지막 자식 아래 + 아래 여백)에 맞추고,
+ * false 면 처음 높이로 되돌린다 (오늘의 성적표 접기 #21). 글꼴이 늦게 로드되면 한 번 더 잰다.
+ */
+export function useFitHeight(ref: React.RefObject<HTMLElement | null>, shrink: boolean): void {
+  useLayoutEffect(() => {
+    const measure = (): void => {
+      const el = ref.current
+      if (!shrink || !el?.lastElementChild) {
+        window.api.fitHeight(null)
+        return
+      }
+      const bottom = el.lastElementChild.getBoundingClientRect().bottom
+      const padding = parseFloat(getComputedStyle(el).paddingBottom) || 0
+      window.api.fitHeight(Math.ceil(bottom + padding))
+    }
+    measure()
+    document.fonts.ready.then(measure)
+  }, [ref, shrink])
 }
