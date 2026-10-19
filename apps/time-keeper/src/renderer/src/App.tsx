@@ -6,7 +6,7 @@ import {
   totalsBetween,
   type TimerState
 } from '../../shared/timer'
-import { CATEGORY_LABEL } from './labels'
+import { CATEGORY_LABEL, TEXT } from '../../shared/labels'
 
 const DAY_MS = 24 * 60 * 60 * 1000
 
@@ -39,7 +39,7 @@ function App(): React.JSX.Element {
     <main className="app">
       <section className={`current ${active ? `cat-${active.category}` : 'idle'}`}>
         <div className="current-label">
-          {active ? `● ${CATEGORY_LABEL[active.category]} 중` : '대기 중'}
+          {active ? `● ${CATEGORY_LABEL[active.category]} 중` : TEXT.idle}
         </div>
         <div className="current-time">{formatHMS(active ? now - active.startedAt : 0)}</div>
       </section>

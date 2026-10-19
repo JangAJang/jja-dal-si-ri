@@ -13,6 +13,7 @@ const HEARTBEAT_MS = 30_000
 export class TimerService {
   private data: StoreData
   private heartbeatTimer: NodeJS.Timeout | null = null
+  private listeners: Array<(state: timer.TimerState) => void> = []
 
   constructor() {
     const loaded = load()
@@ -39,10 +40,20 @@ export class TimerService {
     }, HEARTBEAT_MS)
   }
 
-  /** 앱 종료 직전 호출 — 진행 중인 기록을 지금 시각으로 마감한다. */
+  /** 앱 종료 직전 호출 — 진행 중인 기록을 지금 시각으로 마감한다. 여러 번 불려도 안전하다. */
   shutdown(): void {
     if (this.heartbeatTimer) clearInterval(this.heartbeatTimer)
+    this.heartbeatTimer = null
     this.stopNow()
+  }
+
+  get active(): timer.ActiveSession | null {
+    return this.data.active
+  }
+
+  /** main 프로세스 안의 구독자(트레이 등)용. 렌더러는 IPC.changed 를 받는다. */
+  onChange(listener: (state: timer.TimerState) => void): void {
+    this.listeners.push(listener)
   }
 
   private stopNow(): void {
@@ -59,5 +70,6 @@ export class TimerService {
     save(this.data)
     const state = this.snapshot()
     for (const win of BrowserWindow.getAllWindows()) win.webContents.send(IPC.changed, state)
+    for (const listener of this.listeners) listener(state)
   }
 }
