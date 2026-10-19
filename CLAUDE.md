@@ -9,12 +9,13 @@
 | `docs/runbooks/` | 레포 단위 반복 작업 절차 (작업 브랜치·PR, 앱 추가, 버전 릴리스) |
 | `docs/templates/app/` | 새 앱에 복사하는 파일 템플릿 (`CHANGELOG.md`) |
 | `README.md` | 사람용 앱 목록 표 (버전·상태·주소) |
+| `.github/workflows/` | 데스크톱 앱 릴리스 빌드 (`<앱이름>-release.yml`) |
 
 앱 안에서 작업할 때는 **그 앱의 `CLAUDE.md`를 먼저 읽는다.** 루트 문서는 레포 규칙만 다룬다.
 
 ## 명령어
 루트에는 빌드 대상이 없다. 모든 명령은 앱 폴더 안에서 실행한다.
-- 로컬 스택 기동: `cd apps/<앱이름> && docker compose up`
+- 로컬 스택 기동: `cd apps/<앱이름> && docker compose up` (데스크톱 앱은 `apps/<앱이름>/CLAUDE.md`의 개발 실행 명령)
 - 이미지 빌드: `cd apps/<앱이름> && docker compose build`
 - 앱별 빌드/테스트/린트: `apps/<앱이름>/CLAUDE.md` 참조
 - 새 앱 뼈대 생성: 빈 `apps/<앱이름>/` 안에서 `create-claude-app` 스킬 실행
@@ -23,6 +24,7 @@
 - **앱 하나 = `apps/` 아래 폴더 하나.** 앱 이름은 영문 소문자 kebab-case (`snack-request`).
 - **앱끼리 코드를 공유하지 않는다.** 다른 앱을 import·참조하지 말고, 루트에 공용 모듈(`shared/`, `common/`, `libs/`)을 만들지 않는다. 같은 코드가 필요하면 복사한다.
 - **스택은 `create-claude-app` 프리셋 안에서만 고른다** (Java/Spring · Python, React+Vite+TS, MariaDB). 실행 경로는 앱마다 `docker compose up` 하나.
+- **예외 — 데스크톱 앱**: Windows/macOS에 설치해 쓰는 앱은 **Electron + React + Vite + TypeScript**로 만들고, 산출물은 설치 파일(`.exe`/`.dmg`)이다. `docker-compose.yaml`을 두지 않고, 포트를 배정하지 않는다. 릴리스 빌드는 `.github/workflows/<앱이름>-release.yml`(태그 `<앱이름>/v*` 트리거)이 GitHub Releases에 올린다. GitHub Actions는 이 용도로만 쓴다.
 - **버전은 앱별 SemVer.** 기준 문서는 `apps/<앱이름>/CHANGELOG.md` (Keep a Changelog 형식). 새 앱은 `0.1.0`에서 시작.
 - **앱 코드를 바꾸면 같은 커밋에서 그 앱 `CHANGELOG.md`의 `[Unreleased]`에 항목을 추가한다.**
 - **버전을 올리는 커밋에서는 세 군데를 함께 고친다**: 앱 `CHANGELOG.md`, 루트 `README.md` 앱 목록 표, 앱 매니페스트 버전 필드(`build.gradle`의 `version` / `package.json` / `pyproject.toml`). 절차는 `docs/runbooks/앱-버전-릴리스.md`.
