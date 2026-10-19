@@ -38,4 +38,4 @@ gh pr create --base main \
   2. 위쪽 PR의 base를 `main`으로 바꾼다: `gh pr edit <위쪽 PR> --base main`
   3. 위쪽 PR이 `MERGEABLE`인지 확인하고 머지한다. 더 쌓여 있으면 2~3을 반복한다.
   4. 모두 머지한 뒤 남은 head 브랜치를 지운다: `git push origin --delete <브랜치>`
-  - 아래쪽 브랜치를 먼저 지우면 GitHub가 위쪽 PR의 base를 옮기지 않고 **PR을 닫아 버린다.** 그 상태에서 위위 PR을 머지하면 `main`이 아닌 닫힌 PR의 브랜치로 들어간다 (#17 경위 참조). 이렇게 됐다면 그 브랜치를 head로, `main`을 base로 하는 새 PR을 만들어 머지한다.
+  - 아래쪽 브랜치를 먼저 지우면 GitHub가 위쪽 PR의 base를 옮기지 않고 **PR을 닫아 버린다.** 그 상태에서 더 위에 쌓인 PR을 머지하면 `main`이 아닌 닫힌 PR의 브랜치로 들어간다 (#17 경위 참조). 이렇게 됐다면 그 브랜치를 head로, `main`을 base로 하는 새 PR을 만들어 머지한다.
