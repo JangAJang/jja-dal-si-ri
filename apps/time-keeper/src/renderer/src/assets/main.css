@@ -885,7 +885,12 @@ body[data-view='analog'] {
   overflow-y: auto;
   padding-bottom: 4px;
 }
-.sync-intro,
+.sync-intro {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--panel-ink-soft);
+}
 .sync-line {
   font-size: 13px;
   font-weight: 600;
@@ -992,4 +997,80 @@ body[data-view='analog'] {
 .toggle small {
   font-size: 11px;
   color: var(--panel-ink-soft);
+}
+
+/* ── 동기화 연결 쉽게 (#25) ───────────────────── */
+.sync-choice h3 {
+  margin: 4px 0 4px;
+  font-size: 13px;
+  font-weight: 800;
+}
+.sync-sub {
+  margin: 8px 0 4px;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--panel-ink-soft);
+}
+.folder-list {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.folder-option {
+  display: grid;
+  gap: 1px;
+  padding: 8px 10px;
+  border: 2px solid var(--keycap-edge);
+  border-radius: 9px;
+  background: #fff;
+  color: var(--panel-ink);
+  text-align: left;
+  cursor: pointer;
+}
+.folder-option:hover {
+  border-color: var(--panel-ink);
+}
+.folder-option strong {
+  font-size: 13px;
+}
+.folder-option small {
+  font-size: 11px;
+  color: var(--panel-ink-soft);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sync-advanced {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--keycap-edge);
+}
+.sync-advanced summary {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--panel-ink-soft);
+  cursor: pointer;
+}
+.sync-advanced[open] summary {
+  margin-bottom: 6px;
+}
+.key-file {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.key-file .hint {
+  margin: 0;
+}
+.sync-mode {
+  margin-bottom: 2px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--panel-ink-soft);
+  word-break: break-all;
+}
+.copy-code {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--keycap-edge);
 }

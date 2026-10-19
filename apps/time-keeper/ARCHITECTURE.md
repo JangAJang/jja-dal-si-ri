@@ -40,7 +40,7 @@ flowchart LR
 - **트레이** — 열기/종료 메뉴, 툴팁에 현재 분야·경과 시간(1초 갱신) — `src/main/tray.ts`
 - **통계 계산** — 기간(오늘/주/월/직접) 범위, 일별 합계, 비율 — `src/shared/stats.ts`
 - **통계 화면** — 기간 탭, 비율 막대 + 합계 표, 일별 누적 막대(호버 툴팁) — `src/renderer/src/views/StatsView.tsx`, `components/DailyChart.tsx`
-- **구글 드라이브 동기화** — OAuth(루프백+PKCE)·토큰 갱신·드라이브 REST·동기화 한 바퀴는 Electron 없는 모듈(`src/main/sync/oauth·session·drive·syncEngine.ts`), 키 암호화 저장·브라우저·주기 실행·IPC 는 `src/main/sync/syncService.ts`, 화면은 `views/SyncPanel.tsx`
+- **동기화** — 동기화 한 바퀴(`syncEngine.ts`)는 저장소 인터페이스(`store.ts` `SyncStore`)에만 기댄다. 저장소는 둘: 로컬 클라우드 폴더(`FolderStore`, #25)와 구글 드라이브 API(`drive.ts`, OAuth 루프백+PKCE `oauth.ts`·토큰 갱신 `session.ts`). 클라우드 폴더 찾기 `cloudFolders.ts`, 키 파일·연결 코드 `src/shared/connectionCode.ts`. 이들은 Electron 없이 테스트된다, 키 암호화 저장·브라우저·주기 실행·IPC 는 `src/main/sync/syncService.ts`, 화면은 `views/SyncPanel.tsx`
 - **설정** — 기기별 설정 저장·검증·모든 창에 방송 — `src/main/settingsService.ts`, 형식 `src/shared/settings.ts`, 화면 `views/SettingsView.tsx`
 - **본체 색** — 고른 색에서 테두리·그림자·글자색 계산(어떤 색이든 글자 대비 4.5:1) — `src/shared/theme.ts`
 - **문구 (한/영)** — 언어별 문구 묶음(`ko`·`en`), 언어 결정(`resolveLocale`), 상태 요약(`statusText`·`headline`) — `src/shared/labels.ts`. 렌더러는 `MessagesContext`/`useT()`(`src/renderer/src/i18n.ts`)로 받는다
@@ -59,6 +59,7 @@ flowchart LR
 - 사용자 본인의 Google Drive — `Jjadalsiri Timer` 폴더에 기기별 `sessions-<기기ID>.json` (#7). 권한 `drive.file`. OAuth 클라이언트는 사용자가 직접 만든다(`docs/google-drive-setup.md`)
 
 ## 주요 결정 · 제약
+- **폴더 동기화가 기본 연결 방식** (#25, 사용자 결정) — 이미 깔린 클라우드 앱이 파일을 옮겨 주므로 로그인·키가 필요 없다. 기기별 파일 구조라 클라우드 앱의 늦은 전달·충돌 사본에도 안전하다(충돌 사본은 파일 속 기기 ID 로 걸러낸다). 구글 API 연결은 클라우드 앱 없이 쓰고 싶을 때의 고급 방식으로 남긴다.
 - **동기화는 기기별 파일 + 읽기 전용 병합** (#7) — 기기마다 자기 파일에만 쓰므로 여러 기기가 동시에 동기화해도 덮어쓰지 않는다. 다른 기기 기록은 통계에만 더해지고 이 기기 파일에는 들어가지 않는다. 마지막으로 받은 기록·동기화 시각은 `userData/remote-sessions.json`에 남겨 오프라인·재시작에서도 보인다.
 - **기기 사이 자동 이어받기** (사용자 결정) — "한 번에 하나" 규칙을 기기 사이로. 각 기기가 자기 파일에만 쓴다는 원칙을 지키려고, 다른 기기를 직접 바꾸지 않고 "끝내 줘" 요청을 내 파일에 적고 저쪽이 읽어 스스로 끝낸다. 규칙(살아 있음 판정·누가 끄나·요청 처리)은 `src/shared/sync.ts` 순수 함수.
 - **같은 이름 폴더가 여러 개여도 수렴** — 드라이브에는 원자적 "없으면 만들기"가 없어 처음 동시 연결 때 폴더가 여러 개 생길 수 있다. 가장 먼저 만든 폴더를 집으로 삼고 모든 폴더에서 읽는다.

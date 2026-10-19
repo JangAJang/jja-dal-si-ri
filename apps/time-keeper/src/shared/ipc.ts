@@ -18,5 +18,9 @@ export const IPC = {
   syncCancel: 'sync:cancel',
   syncDisconnect: 'sync:disconnect',
   syncNow: 'sync:now',
-  syncStatus: 'sync:status'
+  syncStatus: 'sync:status',
+  syncFolderCandidates: 'sync:folderCandidates',
+  syncPickFolder: 'sync:pickFolder',
+  syncConnectFolder: 'sync:connectFolder',
+  syncExportCode: 'sync:exportCode'
 } as const

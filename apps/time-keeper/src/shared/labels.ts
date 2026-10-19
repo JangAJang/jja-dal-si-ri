@@ -1,5 +1,6 @@
 import type { Period } from './stats'
-import type { SyncErrorCode } from './sync'
+import type { KeyFileError } from './connectionCode'
+import type { CloudProvider, SyncErrorCode } from './sync'
 import { formatHMS, type ActiveSession, type Category } from './timer'
 
 // 화면·트레이·대화상자 문구 (#8 한국어/영어). main 과 renderer 가 함께 쓴다.
@@ -92,6 +93,25 @@ export interface Messages {
   handoffSentBody: (device: string, category: string) => string
   handoffReceivedTitle: string
   handoffReceivedBody: (device: string, category: string, time: string) => string
+  // 동기화 연결 쉽게 (#25)
+  syncFolderTitle: string
+  syncFolderIntro: string
+  syncFolderFound: string
+  syncFolderNone: string
+  syncPickFolder: string
+  cloudName: Record<CloudProvider, string>
+  syncGoogleAdvanced: string
+  syncKeyFile: string
+  syncKeyDrop: string
+  syncKeyFileError: Record<KeyFileError, string>
+  syncCode: string
+  syncCodePlaceholder: string
+  syncCodeInvalid: string
+  syncCopyCode: string
+  syncCopied: string
+  syncCodeHint: string
+  syncModeFolder: (path: string) => string
+  syncModeGoogle: string
 }
 
 const KO_WEEKDAY = ['일', '월', '화', '수', '목', '금', '토']
@@ -149,7 +169,7 @@ export const ko: Messages = {
   quitConfirmDetail: '끄면 지금까지만 기록돼.',
   quitConfirmOk: '그래도 끌래',
   quitConfirmCancel: '아 맞다, 더 할게',
-  syncTitle: '구글 드라이브 동기화',
+  syncTitle: '다른 컴퓨터와 동기화',
   syncIntro: '내 구글 드라이브에 기록을 올려서 다른 컴퓨터에서도 같이 봐.',
   syncClientId: '클라이언트 ID',
   syncClientSecret: '클라이언트 보안 비밀번호',
@@ -178,7 +198,10 @@ export const ko: Messages = {
     login_cancelled: '로그인이 취소됐어.',
     no_encryption: '이 컴퓨터에선 키를 안전하게 저장할 수 없어서 연결 못 해.',
     network: '인터넷 연결을 확인해줘. 연결되면 다시 해볼게.',
-    drive: '구글 드라이브가 거절했어. 잠시 뒤에 다시 해볼게.'
+    drive: '구글 드라이브가 거절했어. 잠시 뒤에 다시 해볼게.',
+    folder_unavailable:
+      '폴더에 접근할 수 없어. 클라우드 앱이 켜져 있는지, 드라이브가 연결돼 있는지 봐줘.',
+    folder_not_writable: '이 폴더에는 쓸 수가 없어. 다른 폴더를 골라줘.'
   },
   syncBrowserOk: '연결됐어! 이 창은 닫아도 돼.',
   syncBrowserFail: '연결이 안 됐어. 앱으로 돌아가서 다시 해줘.',
@@ -190,7 +213,36 @@ export const ko: Messages = {
     `${device}에서 돌던 '${category}' 기록은 여기서 시작할 때 끝냈어.`,
   handoffReceivedTitle: '다른 컴퓨터가 이어받았어',
   handoffReceivedBody: (device, category, time) =>
-    `${device}에서 시작해서 여기 '${category}' 기록은 ${time}에 끝냈어.`
+    `${device}에서 시작해서 여기 '${category}' 기록은 ${time}에 끝냈어.`,
+  syncFolderTitle: '폴더로 동기화 (추천)',
+  syncFolderIntro:
+    '구글 드라이브 데스크톱, Dropbox, OneDrive 같은 앱이 동기화하는 폴더를 고르면 끝. 로그인도 키도 필요 없어.',
+  syncFolderFound: '이 컴퓨터에서 찾은 폴더',
+  syncFolderNone:
+    '클라우드 폴더를 못 찾았어. 구글 드라이브 데스크톱 앱을 깔거나, 동기화되는 폴더를 직접 골라줘.',
+  syncPickFolder: '다른 폴더 고르기…',
+  cloudName: {
+    google: '구글 드라이브',
+    dropbox: 'Dropbox',
+    onedrive: 'OneDrive',
+    icloud: 'iCloud Drive'
+  },
+  syncGoogleAdvanced: '구글 계정으로 연결 (내 키 쓰기)',
+  syncKeyFile: '키 파일 불러오기',
+  syncKeyDrop: '구글에서 받은 키 파일(.json)을 여기로 끌어다 놓아도 돼',
+  syncKeyFileError: {
+    not_json: '키 파일이 아니야. 구글에서 받은 .json 파일을 골라줘.',
+    wrong_type: '"웹 애플리케이션" 키야. "데스크톱 앱" 유형으로 다시 만들어줘.',
+    missing_id: '키 파일에 클라이언트 ID가 없어.'
+  },
+  syncCode: '연결 코드',
+  syncCodePlaceholder: '다른 컴퓨터에서 복사한 JJT1-… 코드',
+  syncCodeInvalid: '연결 코드가 이상해. 다시 복사해 와줘.',
+  syncCopyCode: '다른 컴퓨터용 연결 코드 복사',
+  syncCopied: '복사했어! 다른 컴퓨터의 "연결 코드" 칸에 붙여 넣어.',
+  syncCodeHint: '코드에 키가 들어 있어. 내 컴퓨터끼리만 쓰고 남한테 주지 마.',
+  syncModeFolder: (path) => `폴더: ${path}`,
+  syncModeGoogle: '구글 드라이브 (내 키)'
 }
 
 const EN_WEEKDAY = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -262,7 +314,7 @@ export const en: Messages = {
   quitConfirmDetail: 'Quit now and only the time so far is saved.',
   quitConfirmOk: 'Quit anyway',
   quitConfirmCancel: 'Oh right, keep going',
-  syncTitle: 'Google Drive sync',
+  syncTitle: 'Sync across computers',
   syncIntro: 'Keep your records in your own Google Drive and see them on your other computers.',
   syncClientId: 'Client ID',
   syncClientSecret: 'Client secret',
@@ -292,7 +344,9 @@ export const en: Messages = {
     login_cancelled: 'Login was cancelled.',
     no_encryption: 'This computer can’t store keys securely, so sync is off.',
     network: 'Check your internet. I’ll try again once you’re back.',
-    drive: 'Google Drive said no. I’ll try again in a bit.'
+    drive: 'Google Drive said no. I’ll try again in a bit.',
+    folder_unavailable: 'Can’t reach the folder. Is the cloud app running and the drive connected?',
+    folder_not_writable: 'Can’t write to this folder. Pick another one.'
   },
   syncBrowserOk: 'Connected! You can close this tab.',
   syncBrowserFail: 'Didn’t connect. Go back to the app and try again.',
@@ -303,7 +357,36 @@ export const en: Messages = {
   handoffSentBody: (device, category) => `Ended '${category}' on ${device} when you started here.`,
   handoffReceivedTitle: 'Another computer took over',
   handoffReceivedBody: (device, category, time) =>
-    `${device} started a timer, so '${category}' here ended at ${time}.`
+    `${device} started a timer, so '${category}' here ended at ${time}.`,
+  syncFolderTitle: 'Sync with a folder (recommended)',
+  syncFolderIntro:
+    'Pick a folder that Google Drive for desktop, Dropbox or OneDrive already syncs. No login, no keys.',
+  syncFolderFound: 'Found on this computer',
+  syncFolderNone:
+    'No cloud folder found. Install Google Drive for desktop, or pick a synced folder yourself.',
+  syncPickFolder: 'Choose a folder…',
+  cloudName: {
+    google: 'Google Drive',
+    dropbox: 'Dropbox',
+    onedrive: 'OneDrive',
+    icloud: 'iCloud Drive'
+  },
+  syncGoogleAdvanced: 'Connect a Google account (your own key)',
+  syncKeyFile: 'Load key file',
+  syncKeyDrop: 'Or drop the key file (.json) from Google here',
+  syncKeyFileError: {
+    not_json: 'That’s not a key file. Pick the .json you got from Google.',
+    wrong_type: 'That’s a "Web application" key. Make a "Desktop app" one instead.',
+    missing_id: 'No client ID in that key file.'
+  },
+  syncCode: 'Connection code',
+  syncCodePlaceholder: 'JJT1-… code copied from your other computer',
+  syncCodeInvalid: 'That code looks off. Copy it again.',
+  syncCopyCode: 'Copy code for another computer',
+  syncCopied: 'Copied! Paste it into "Connection code" on the other computer.',
+  syncCodeHint: 'The code contains your key — keep it between your own computers.',
+  syncModeFolder: (path) => `Folder: ${path}`,
+  syncModeGoogle: 'Google Drive (your key)'
 }
 
 export const MESSAGES: Record<Locale, Messages> = { ko, en }
