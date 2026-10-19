@@ -3,6 +3,7 @@ import {
   canStart,
   formatHMS,
   heartbeat,
+  minuteHandAngle,
   recover,
   select,
   start,
@@ -86,6 +87,15 @@ describe('select / canStart (준비 → 시작)', () => {
   it('진행 중인 분야를 누르면 전환 예약이 취소된다', () => {
     expect(select('break', 'work', working)).toBeNull()
     expect(canStart('work', working)).toBe(false)
+  })
+})
+
+describe('minuteHandAngle', () => {
+  it('시작 시 12시, 15분에 3시, 60분에 다시 12시', () => {
+    expect(minuteHandAngle(0)).toBe(0)
+    expect(minuteHandAngle(15 * 60_000)).toBe(90)
+    expect(minuteHandAngle(H)).toBe(0)
+    expect(minuteHandAngle(H + 30 * 60_000)).toBe(180)
   })
 })
 

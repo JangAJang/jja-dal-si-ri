@@ -9,7 +9,7 @@ Electron 데스크톱 앱이다. main 프로세스의 `TimerService`가 타이�
 ```mermaid
 flowchart LR
   subgraph renderer["renderer (React)"]
-    app["App.tsx<br/>타이머 화면"]
+    app["views/<br/>기본·디지털 미니·아날로그 미니"]
   end
   subgraph preload
     api["window.api"]
@@ -35,11 +35,12 @@ flowchart LR
 - **IPC 채널** — main·preload가 공유하는 채널 이름 — `src/shared/ipc.ts`
 - **TimerService** — 상태 소유, IPC 핸들러, 30초 heartbeat, 절전 시 마감, 종료 시 마감 — `src/main/timerService.ts`
 - **store** — 로컬 JSON 읽기/원자적 쓰기, 기기 ID 발급 — `src/main/store.ts`
-- **앱 수명 관리** — 단일 인스턴스, X 버튼 = 숨기기, 종료 확인(`requestQuit`), OS 종료·로그오프 시 마감 — `src/main/index.ts`
+- **앱 수명 관리** — 단일 인스턴스, 종료 확인(`requestQuit`), OS 종료 시 마감 — `src/main/index.ts`
+- **창 관리** — 기본/디지털 미니/아날로그 미니 창을 하나씩 만들어 두고 하나만 표시(`openView`), X = 숨기기, 항상 위, 미니 드래그 — `src/main/windows.ts`
 - **트레이** — 열기/종료 메뉴, 툴팁에 현재 분야·경과 시간(1초 갱신) — `src/main/tray.ts`
 - **문구** — 분야 이름·화면·트레이·대화상자 문구, 상태 요약(`statusText`) — `src/shared/labels.ts`
 - **preload API** — `getState`/`start`/`stop`/`onChanged` — `src/preload/index.ts`, 타입 `index.d.ts`
-- **타이머 화면** — 현재 상태(대기/준비/진행 중)·경과 시간, 분야 버튼 3개(준비)·시작·종료, 오늘 합계. 준비 선택값은 이 화면의 로컬 상태 — `src/renderer/src/App.tsx`
+- **화면** — `App.tsx`가 URL 해시(#main/#digital/#analog)로 `views/`의 화면을 고른다. LCD·키는 `components/`를 세 화면이 함께 쓴다. 준비 선택값은 창마다의 로컬 상태이고, 진행 기록이 바뀌면 저절로 풀린다(`hooks.ts > useSelection`)
 
 ## 데이터 흐름
 1. 사용자가 [쉼]으로 준비한 뒤 [시작]을 누르면 `window.api.start('break')` → IPC `timer:start`. (준비 단계는 화면 안에서만 일어나고 main 은 모른다.)
@@ -58,6 +59,8 @@ flowchart LR
 - **로컬 우선 저장** — 오프라인·비로그인에서도 동작해야 한다(사용자 결정). 동기화는 로컬 파일을 올리는 부가 기능이다.
 - **앱 종료·절전 시 기록 자동 마감** (사용자 결정) — 비정상 종료는 30초 heartbeat로 오차를 제한한다.
 - **X 버튼은 트레이로 숨기기, 종료는 트레이에서 확인 후** (사용자 결정) — 실수로 기록이 끊기지 않게 한다. mac Cmd+Q·Dock 종료도 `before-quit`에서 같은 확인을 거친다. OS 종료·로그오프(Windows `session-end`, mac `powerMonitor.shutdown`)는 확인 없이 마감한다.
+- **창은 여러 개, 보이는 건 하나** — 미니 창을 별도 BrowserWindow로 두면 크기·투명도·항상 위를 창마다 다르게 줄 수 있다. 상태는 main이 하나로 갖고 있어 어느 창에서 눌러도 모든 창이 같이 바뀐다.
+- **미니 창 드래그를 직접 구현** — CSS drag 영역은 Windows에서 더블클릭 이벤트를 삼켜 "더블클릭 → 기본 모드"가 안 된다. 렌더러가 mousedown/up을 알리면 main이 커서를 따라 창을 옮긴다.
 - **단일 인스턴스** — 두 프로세스가 같은 기록 파일을 덮어쓰지 않도록, 두 번째 실행은 기존 창을 띄우고 끝난다.
 - **기기별 파일 동기화** — 각 기기가 자기 파일에만 쓰므로 여러 기기 동시 사용에도 쓰기 충돌이 없다.
 - **OAuth 키는 사용자가 직접 입력** (사용자 결정) — 공개 레포라 키를 빌드에 넣지 않는다. 대신 사용자 설정이 번거롭다.

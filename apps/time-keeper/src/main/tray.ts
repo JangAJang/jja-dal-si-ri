@@ -1,10 +1,11 @@
 import { Menu, Tray, nativeImage } from 'electron'
 import icon from '../../resources/icon.png?asset'
 import { statusText, TEXT } from '../shared/labels'
+import type { ViewMode } from '../shared/view'
 import type { TimerService } from './timerService'
 
 interface TrayActions {
-  open: () => void
+  open: (mode: ViewMode) => void
   quit: () => void
 }
 
@@ -20,16 +21,17 @@ export function createTray(service: TimerService, actions: TrayActions): Tray {
   const tray = new Tray(image)
   current = tray
 
-  // TODO(#5): 디지털/아날로그 미니 모드로 열기 항목 추가
   tray.setContextMenu(
     Menu.buildFromTemplate([
-      { label: TEXT.trayOpen, click: actions.open },
+      { label: TEXT.trayOpen, click: () => actions.open('main') },
+      { label: TEXT.toDigital, click: () => actions.open('digital') },
+      { label: TEXT.toAnalog, click: () => actions.open('analog') },
       { type: 'separator' },
       { label: TEXT.trayQuit, click: actions.quit }
     ])
   )
   // Windows: 아이콘 클릭으로 창 열기 (mac 은 클릭 시 메뉴가 열린다)
-  tray.on('click', actions.open)
+  tray.on('click', () => actions.open('main'))
 
   const refresh = (): void =>
     tray.setToolTip(`${TEXT.appName} — ${statusText(service.active, Date.now())}`)

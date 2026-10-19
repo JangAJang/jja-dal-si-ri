@@ -3,5 +3,10 @@ export const IPC = {
   getState: 'timer:getState',
   start: 'timer:start',
   stop: 'timer:stop',
-  changed: 'timer:changed'
+  changed: 'timer:changed',
+  openView: 'window:openView',
+  getAlwaysOnTop: 'window:getAlwaysOnTop',
+  setAlwaysOnTop: 'window:setAlwaysOnTop',
+  dragStart: 'window:dragStart',
+  dragEnd: 'window:dragEnd'
 } as const

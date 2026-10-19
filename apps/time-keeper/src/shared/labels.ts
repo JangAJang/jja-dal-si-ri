@@ -40,11 +40,28 @@ export const TEXT = {
   today: '오늘의 성적표',
   trayOpen: '나와봐',
   trayQuit: '오늘은 여기까지',
+  // 미니 모드 (#5)
+  toDigital: '쪼그맣게 (숫자)',
+  toAnalog: '쪼그맣게 (시계)',
+  pinOn: '맨 위에 박제',
+  pinOff: '박제 풀기',
+  miniHint: '더블클릭하면 다시 커져',
+  expand: '다시 크게',
+  nextUp: (ready: string): string => `다음: ${ready}`,
+  startShort: '▶',
+  stopShort: '■',
   quitConfirmTitle: '진짜 끌 거야?',
   quitConfirmMessage: (category: Category): string => QUIT_INTERRUPT[category],
   quitConfirmDetail: '끄면 지금까지만 기록돼.',
   quitConfirmOk: '그래도 끌래',
   quitConfirmCancel: '아 맞다, 더 할게'
+}
+
+/** 화면 맨 위 상태 문구: 진행 중 > 준비 > 대기 순. */
+export function headline(active: ActiveSession | null, selected: Category | null): string {
+  if (active) return `● ${CATEGORY_RUNNING[active.category]}`
+  if (selected) return CATEGORY_READY[selected]
+  return TEXT.idle
 }
 
 /** 현재 상태 한 줄 요약. 예: "뇌 키우는 중 🧠 01:23:45", "멍 때리는 중". 트레이 툴팁에 쓴다. */
