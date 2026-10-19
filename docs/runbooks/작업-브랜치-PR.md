@@ -33,3 +33,9 @@ gh pr create --base main \
 - `main`에서 바로 작업을 시작하는 실수 — 커밋 전에 현재 브랜치를 확인한다.
 - 이슈 번호에 `#`을 붙이면 셸에서 주석으로 해석될 수 있다 — 브랜치 이름에는 숫자만 쓴다.
 - 브랜치의 `<type>`과 커밋 메시지의 `<type>`이 다르면 리뷰 때 혼란스럽다 — 맞춘다.
+- **쌓은 PR(stacked PR) 머지 순서** — 아직 머지되지 않은 PR 브랜치 위에 새 PR을 쌓았다면(base가 `main`이 아닌 PR), 아래 순서를 지킨다.
+  1. 아래쪽 PR(base=`main`)을 머지하되 **head 브랜치는 아직 지우지 않는다** (`gh pr merge <n> --merge`, `--delete-branch` 없이).
+  2. 위쪽 PR의 base를 `main`으로 바꾼다: `gh pr edit <위쪽 PR> --base main`
+  3. 위쪽 PR이 `MERGEABLE`인지 확인하고 머지한다. 더 쌓여 있으면 2~3을 반복한다.
+  4. 모두 머지한 뒤 남은 head 브랜치를 지운다: `git push origin --delete <브랜치>`
+  - 아래쪽 브랜치를 먼저 지우면 GitHub가 위쪽 PR의 base를 옮기지 않고 **PR을 닫아 버린다.** 그 상태에서 위위 PR을 머지하면 `main`이 아닌 닫힌 PR의 브랜치로 들어간다 (#17 경위 참조). 이렇게 됐다면 그 브랜치를 head로, `main`을 base로 하는 새 PR을 만들어 머지한다.
