@@ -3,7 +3,6 @@ import { join } from 'path'
 import { is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { IPC } from '../shared/ipc'
-import { TEXT } from '../shared/labels'
 import type { ViewMode } from '../shared/view'
 
 /**
@@ -29,6 +28,7 @@ const fullContentHeight = new WeakMap<BrowserWindow, number>()
 /** true 가 되면 창 닫기를 더 이상 막지 않는다 (실제 종료 진행 중). */
 let quitting = false
 let onSessionEnd: () => void = () => {}
+let titleOf: () => string = () => ''
 
 export function markQuitting(): void {
   quitting = true
@@ -38,8 +38,9 @@ export function isQuitting(): boolean {
   return quitting
 }
 
-export function initWindows(options: { onSessionEnd: () => void }): void {
+export function initWindows(options: { onSessionEnd: () => void; title: () => string }): void {
   onSessionEnd = options.onSessionEnd
+  titleOf = options.title
   registerIpc()
 }
 
@@ -51,7 +52,7 @@ function createWindow(mode: ViewMode): BrowserWindow {
     show: false,
     resizable: false,
     maximizable: false,
-    title: TEXT.appName,
+    title: titleOf(),
     autoHideMenuBar: true,
     ...(spec.mini
       ? {
@@ -134,6 +135,11 @@ export function openView(mode: ViewMode): void {
   // 막 만든 창은 로드가 끝난 뒤에 보여야 빈 화면이 깜빡이지 않는다
   if (target.webContents.isLoading()) target.once('ready-to-show', show)
   else show()
+}
+
+/** 언어가 바뀌면 이미 만든 창 제목도 바꾼다. */
+export function setWindowTitles(title: string): void {
+  for (const win of windows.values()) if (!win.isDestroyed()) win.setTitle(title)
 }
 
 /** 대화상자의 부모로 쓸, 지금 보이는 창. */

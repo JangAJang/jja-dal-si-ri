@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useState } from 'react'
 import { canStart, select, type Category, type TimerState } from '../../shared/timer'
-import type { Settings } from '../../shared/settings'
+import type { SettingsSnapshot } from '../../shared/settings'
 
 /** 1초마다 갱신되는 현재 시각. 표시용 시간은 항상 (now - startedAt) 으로 계산한다. */
 export function useNow(): number {
@@ -100,8 +100,8 @@ export function useMiniWindow(): {
 }
 
 /** main 의 SettingsService 설정 구독. 첫 응답 전에는 null. */
-export function useSettings(): Settings | null {
-  const [settings, setSettings] = useState<Settings | null>(null)
+export function useSettings(): SettingsSnapshot | null {
+  const [settings, setSettings] = useState<SettingsSnapshot | null>(null)
   useEffect(() => {
     window.api.getSettings().then(setSettings)
     return window.api.onSettingsChanged(setSettings)

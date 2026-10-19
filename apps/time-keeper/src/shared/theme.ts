@@ -10,7 +10,7 @@ export interface Rgb {
 /** 기본 민트. 이 색일 때는 디자인에서 손으로 맞춘 값을 그대로 쓴다. */
 export const DEFAULT_SHELL = '#B9DEC9'
 
-/** 클릭 한 번으로 고르는 색. 이름은 labels 의 SHELL_PRESET_NAME 과 짝. */
+/** 클릭 한 번으로 고르는 색. 이름은 labels 의 Messages.presetNames 와 같은 순서. */
 export const SHELL_PRESETS = [
   '#B9DEC9', // 민트 (기본)
   '#F1E3B0', // 버터

@@ -1,12 +1,15 @@
 import { useState } from 'react'
-import type { Settings } from '../../../shared/settings'
+import type { LocalePreference, Settings, SettingsSnapshot } from '../../../shared/settings'
+import { LOCALES } from '../../../shared/labels'
 import { SHELL_PRESETS, clampChannel, hexToRgb, rgbToHex, type Rgb } from '../../../shared/theme'
-import { SHELL_PRESET_NAME, TEXT } from '../../../shared/labels'
+import { useT } from '../i18n'
 
 const CHANNELS = ['r', 'g', 'b'] as const
+const LOCALE_CHOICES: LocalePreference[] = ['auto', ...LOCALES]
 
 /** 본체 색: 프리셋을 누르거나 R·G·B(0~255)를 직접 넣는다. 바꾸면 바로 모든 창에 적용된다. */
 function ShellColor({ hex }: { hex: string }): React.JSX.Element {
+  const t = useT()
   const rgb = hexToRgb(hex) as Rgb
   // 입력칸은 타이핑 중 빈칸·잘못된 값을 허용해야 해서 비제어(defaultValue)로 둔다.
   // 입력칸 묶음의 key 는 보통 현재 색이라, 프리셋 등으로 색이 바뀌면(설정이 main 에서 돌아온 뒤)
@@ -17,15 +20,15 @@ function ShellColor({ hex }: { hex: string }): React.JSX.Element {
 
   return (
     <section className="panel">
-      <h2>{TEXT.settingsShell}</h2>
+      <h2>{t.settingsShell}</h2>
       <div className="presets">
         {SHELL_PRESETS.map((p, i) => (
           <button
             key={p}
             className={p === hex ? 'preset is-on' : 'preset'}
             style={{ background: p }}
-            title={SHELL_PRESET_NAME[i]}
-            aria-label={SHELL_PRESET_NAME[i]}
+            title={t.presetNames[i]}
+            aria-label={t.presetNames[i]}
             aria-pressed={p === hex}
             onClick={() => setColor(p)}
           />
@@ -58,15 +61,39 @@ function ShellColor({ hex }: { hex: string }): React.JSX.Element {
         <span className="rgb-chip" style={{ background: hex }} aria-hidden />
         <code className="rgb-hex">{hex}</code>
       </div>
-      <p className="hint">{TEXT.settingsShellHint}</p>
+      <p className="hint">{t.settingsShellHint}</p>
     </section>
   )
 }
 
-export function SettingsView({ settings }: { settings: Settings }): React.JSX.Element {
+/** 언어: 시스템 따라가기 / 한국어 / English (#8). 언어 이름은 각 언어로 쓴다. */
+function Language({ value }: { value: LocalePreference }): React.JSX.Element {
+  const t = useT()
+  return (
+    <section className="panel">
+      <h2>{t.settingsLanguage}</h2>
+      <div className="segmented light" role="radiogroup" aria-label={t.settingsLanguage}>
+        {LOCALE_CHOICES.map((l) => (
+          <button
+            key={l}
+            role="radio"
+            aria-checked={value === l}
+            className={value === l ? 'is-on' : ''}
+            onClick={() => window.api.setSettings({ locale: l })}
+          >
+            {t.languageName[l]}
+          </button>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+export function SettingsView({ settings }: { settings: SettingsSnapshot }): React.JSX.Element {
   return (
     <div className="settings">
       <ShellColor hex={settings.shellColor} />
+      <Language value={settings.locale} />
     </div>
   )
 }

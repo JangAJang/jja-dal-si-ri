@@ -1,12 +1,19 @@
 import { app, dialog, powerMonitor } from 'electron'
 import { electronApp, optimizer } from '@electron-toolkit/utils'
-import { TEXT } from '../shared/labels'
 import { SettingsService } from './settingsService'
 import { TimerService } from './timerService'
 import { createTray } from './tray'
-import { initWindows, isQuitting, markQuitting, openView, visibleWindow } from './windows'
+import {
+  initWindows,
+  isQuitting,
+  markQuitting,
+  openView,
+  setWindowTitles,
+  visibleWindow
+} from './windows'
 
 let timerService: TimerService
+let settingsService: SettingsService
 
 // 두 번 실행되면 같은 기록 파일을 두 프로세스가 덮어쓴다 — 기존 창을 띄우고 새 프로세스는 끝낸다.
 if (!app.requestSingleInstanceLock()) {
@@ -19,14 +26,15 @@ if (!app.requestSingleInstanceLock()) {
 /** 종료 요청. 기록이 진행 중이면 확인을 받은 뒤에만 종료한다. */
 async function requestQuit(): Promise<void> {
   const active = timerService.active
+  const t = settingsService.messages
   if (active) {
     const parent = visibleWindow()
     const options = {
       type: 'question' as const,
-      title: TEXT.quitConfirmTitle,
-      message: TEXT.quitConfirmMessage(active.category),
-      detail: TEXT.quitConfirmDetail,
-      buttons: [TEXT.quitConfirmOk, TEXT.quitConfirmCancel],
+      title: t.quitConfirmTitle,
+      message: t.quitInterrupt[active.category],
+      detail: t.quitConfirmDetail,
+      buttons: [t.quitConfirmOk, t.quitConfirmCancel],
       defaultId: 1,
       cancelId: 1
     }
@@ -50,12 +58,16 @@ function onReady(): void {
 
   timerService = new TimerService()
   timerService.register()
-  const settingsService = new SettingsService()
+  settingsService = new SettingsService()
   settingsService.register()
 
-  initWindows({ onSessionEnd: () => timerService.shutdown() })
+  initWindows({
+    onSessionEnd: () => timerService.shutdown(),
+    title: () => settingsService.messages.appName
+  })
+  settingsService.onChange(() => setWindowTitles(settingsService.messages.appName))
   openView('main')
-  createTray(timerService, { open: openView, quit: () => void requestQuit() })
+  createTray(timerService, settingsService, { open: openView, quit: () => void requestQuit() })
 
   // mac: 시스템 종료·재시작 시에는 확인창 없이 마감한다.
   powerMonitor.on('shutdown', () => {

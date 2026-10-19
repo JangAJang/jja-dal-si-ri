@@ -9,8 +9,8 @@ import {
   type Period,
   type Range
 } from '../../../shared/stats'
-import { CATEGORY_LABEL, PERIOD_LABEL, TEXT } from '../../../shared/labels'
 import { DailyChart } from '../components/DailyChart'
+import { useT } from '../i18n'
 
 const DAY = 86_400_000
 /** 날마다 막대는 두 달까지만 그린다 (그 이상은 막대가 너무 가늘다) */
@@ -27,6 +27,7 @@ const fromInput = (v: string): number | null => {
 }
 
 export function StatsView({ state, now }: { state: TimerState; now: number }): React.JSX.Element {
+  const t = useT()
   const [period, setPeriod] = useState<Period>('week')
   const [custom, setCustom] = useState<Range>(() => ({ from: now - 6 * DAY, to: now }))
 
@@ -47,7 +48,7 @@ export function StatsView({ state, now }: { state: TimerState; now: number }): R
             className={period === p ? 'is-on' : ''}
             onClick={() => setPeriod(p)}
           >
-            {PERIOD_LABEL[p]}
+            {t.period[p]}
           </button>
         ))}
       </div>
@@ -58,20 +59,20 @@ export function StatsView({ state, now }: { state: TimerState; now: number }): R
             type="date"
             value={toInput(custom.from)}
             onChange={(e) => {
-              const t = fromInput(e.target.value)
-              if (t !== null) setCustom((c) => ({ ...c, from: t }))
+              const ms = fromInput(e.target.value)
+              if (ms !== null) setCustom((c) => ({ ...c, from: ms }))
             }}
           />
-          <span>{TEXT.customFrom}</span>
+          <span>{t.customFrom}</span>
           <input
             type="date"
             value={toInput(custom.to)}
             onChange={(e) => {
-              const t = fromInput(e.target.value)
-              if (t !== null) setCustom((c) => ({ ...c, to: t }))
+              const ms = fromInput(e.target.value)
+              if (ms !== null) setCustom((c) => ({ ...c, to: ms }))
             }}
           />
-          <span>{TEXT.customTo}</span>
+          <span>{t.customTo}</span>
         </div>
       )}
 
@@ -91,14 +92,14 @@ export function StatsView({ state, now }: { state: TimerState; now: number }): R
               <tr key={c} className={`cat-${c}`}>
                 <th scope="row">
                   <i className="swatch" />
-                  {CATEGORY_LABEL[c]}
+                  {t.category[c]}
                 </th>
                 <td>{formatHMS(totals[c])}</td>
                 <td className="pct">{pct[c]}%</td>
               </tr>
             ))}
             <tr className="sum">
-              <th scope="row">{TEXT.statsTotal}</th>
+              <th scope="row">{t.statsTotal}</th>
               <td>{formatHMS(sum)}</td>
               <td />
             </tr>
@@ -108,17 +109,17 @@ export function StatsView({ state, now }: { state: TimerState; now: number }): R
 
       {period !== 'today' && (
         <section className="panel daily">
-          <h2>{TEXT.statsDaily}</h2>
+          <h2>{t.statsDaily}</h2>
           {sum === 0 ? (
-            <p className="empty">{TEXT.statsEmpty}</p>
+            <p className="empty">{t.statsEmpty}</p>
           ) : days.length > MAX_CHART_DAYS ? (
-            <p className="empty">{TEXT.statsTooLong}</p>
+            <p className="empty">{t.statsTooLong}</p>
           ) : (
             <DailyChart days={days} now={now} weekly={period === 'week'} />
           )}
         </section>
       )}
-      {period === 'today' && sum === 0 && <p className="empty">{TEXT.statsEmpty}</p>}
+      {period === 'today' && sum === 0 && <p className="empty">{t.statsEmpty}</p>}
     </div>
   )
 }

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { CATEGORIES, formatHMS, startOfDay } from '../../../shared/timer'
 import { sumTotals, type DayTotals } from '../../../shared/stats'
-import { CATEGORY_LABEL, TEXT, WEEKDAY } from '../../../shared/labels'
+import { useT } from '../i18n'
 
 const HOUR = 3_600_000
 
@@ -17,6 +17,7 @@ interface Props {
  * 세로축 최댓값은 가장 긴 날을 시간 단위로 올림. 막대에 마우스를 올리면 그날 값이 뜬다.
  */
 export function DailyChart({ days, now, weekly }: Props): React.JSX.Element {
+  const t = useT()
   const [hovered, setHovered] = useState<number | null>(null)
   const today = startOfDay(now)
   const longest = Math.max(0, ...days.map((d) => sumTotals(d.totals)))
@@ -26,7 +27,7 @@ export function DailyChart({ days, now, weekly }: Props): React.JSX.Element {
 
   const tickLabel = (day: number, i: number): string => {
     const d = new Date(day)
-    if (weekly) return WEEKDAY[d.getDay()]
+    if (weekly) return t.weekday[d.getDay()]
     const n = d.getDate()
     // 2주 이하면 날마다, 그보다 길면 1일·5의 배수만
     if (days.length <= 14) return String(n)
@@ -36,7 +37,7 @@ export function DailyChart({ days, now, weekly }: Props): React.JSX.Element {
   return (
     <figure className="chart" onMouseLeave={() => setHovered(null)}>
       <div className="chart-plot">
-        <span className="chart-max">{TEXT.hours(maxHours)}</span>
+        <span className="chart-max">{t.hours(maxHours)}</span>
         <div className="chart-cols" style={{ gap: days.length > 14 ? 2 : 6 }}>
           {days.map((d, i) => {
             const total = sumTotals(d.totals)
@@ -79,11 +80,11 @@ export function DailyChart({ days, now, weekly }: Props): React.JSX.Element {
           }}
           role="status"
         >
-          <strong>{TEXT.dayTitle(tip.day)}</strong>
+          <strong>{t.dayTitle(tip.day)}</strong>
           {CATEGORIES.map((c) => (
             <span key={c} className={`tip-row cat-${c}`}>
               <i className="swatch" />
-              {CATEGORY_LABEL[c]}
+              {t.category[c]}
               <em>{formatHMS(tip.totals[c])}</em>
             </span>
           ))}

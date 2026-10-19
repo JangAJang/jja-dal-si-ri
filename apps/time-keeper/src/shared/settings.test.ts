@@ -12,6 +12,11 @@ describe('normalizeSettings', () => {
     expect(normalizeSettings({ shellColor: 'red' }).shellColor).toBe(DEFAULT_SETTINGS.shellColor)
   })
 
+  it('언어는 auto·ko·en 만, 그 밖은 auto', () => {
+    expect(normalizeSettings({ locale: 'en' }).locale).toBe('en')
+    expect(normalizeSettings({ locale: 'fr' }).locale).toBe('auto')
+  })
+
   it('타입이 다른 값은 무시', () => {
     expect(normalizeSettings({ reportCollapsed: 'yes' }).reportCollapsed).toBe(false)
     expect(normalizeSettings({ reportCollapsed: true }).reportCollapsed).toBe(true)

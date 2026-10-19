@@ -1,8 +1,8 @@
 import { minuteHandAngle, type TimerState } from '../../../shared/timer'
-import { TEXT } from '../../../shared/labels'
 import { ExpandButton } from '../components/ExpandButton'
 import { TimerControls } from '../components/TimerControls'
 import { useMiniWindow, useSelection } from '../hooks'
+import { useT } from '../i18n'
 
 const MINUTE_TICKS = Array.from({ length: 60 }, (_, i) => i)
 // 12시(0분)는 바늘 출발점이라 숫자 대신 삼각 표식을 둔다
@@ -14,6 +14,7 @@ const NUMBERS = [15, 30, 45]
  * 마우스를 올리면 다이얼 위쪽(바깥)에 키 줄이 나타난다 — 다이얼 안에 두면 눈금과 겹쳐 읽기 어렵다.
  */
 export function AnalogMini({ state, now }: { state: TimerState; now: number }): React.JSX.Element {
+  const t = useT()
   const selection = useSelection(state)
   const mini = useMiniWindow()
   const active = state.active
@@ -21,7 +22,7 @@ export function AnalogMini({ state, now }: { state: TimerState; now: number }): 
   const cat = active?.category ?? selection.selected
 
   return (
-    <main className={`mini analog ${cat ? `cat-${cat}` : 'idle'}`} title={TEXT.miniHint} {...mini}>
+    <main className={`mini analog ${cat ? `cat-${cat}` : 'idle'}`} title={t.miniHint} {...mini}>
       <div className="hover-keys">
         <TimerControls active={active} selection={selection} compact />
       </div>
