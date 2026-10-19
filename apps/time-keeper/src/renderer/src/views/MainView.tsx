@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   CATEGORIES,
   formatHMS,
@@ -10,7 +10,7 @@ import { headline } from '../../../shared/labels'
 import { IconAnalog, IconDigital, IconPin } from '../components/Icons'
 import { Lcd } from '../components/Lcd'
 import { TimerControls } from '../components/TimerControls'
-import { useSelection } from '../hooks'
+import { useFitHeight, useSelection } from '../hooks'
 import { useT } from '../i18n'
 import { nextDay } from '../../../shared/stats'
 import { StatsView } from './StatsView'
@@ -55,6 +55,9 @@ export function MainView({
     ['settings', t.tabSettings]
   ]
   const collapsed = settings.reportCollapsed
+  const deviceRef = useRef<HTMLElement>(null)
+  // 타이머 탭에서 성적표를 접으면 창도 내용만큼 줄인다. 통계·설정 탭은 공간이 필요해 원래 높이.
+  useFitHeight(deviceRef, tab === 'timer' && collapsed)
   const selection = useSelection(state)
   const { selected } = selection
   const active = state.active
@@ -63,7 +66,7 @@ export function MainView({
   const longest = Math.max(...CATEGORIES.map((c) => totals[c]))
 
   return (
-    <main className="device">
+    <main className="device" ref={deviceRef}>
       <header className="device-top">
         <div className="tabs" role="tablist">
           {tabs.map(([t, label]) => (
