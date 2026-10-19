@@ -377,14 +377,22 @@ body[data-view='analog'] {
 }
 
 /* ── 아날로그 미니: 다이얼 타이머 ─────────────── */
+/* 위: 키 줄(호버 시), 아래: 다이얼 */
 .mini.analog {
-  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
   height: 100%;
+  padding-bottom: 2px;
 }
+/* 다이얼은 고정 크기가 아니라 남은 공간에 맞춰 줄어든다 (viewBox 가 비율을 지킨다).
+   디스플레이 배율에 따라 창이 몇 px 작게 잡혀도 아래가 잘리지 않게. */
 .dial {
   display: block;
+  flex: 1 1 0;
+  min-height: 0;
   width: 100%;
-  height: 100%;
 }
 .dial-body {
   fill: var(--shell);
@@ -429,13 +437,11 @@ body[data-view='analog'] {
 }
 /* 평소엔 숨기고, 마우스를 올리면 키가 다이얼 아래쪽에 나타난다 */
 .hover-keys {
-  position: absolute;
-  left: 50%;
-  bottom: 16%;
-  width: 74%;
-  transform: translateX(-50%);
-  padding: 5px;
-  border-radius: 10px;
+  flex: none;
+  width: 100%;
+  padding: 6px 7px 8px;
+  border-radius: 12px;
+  border: 2px solid var(--shell-edge);
   background: var(--shell);
   box-shadow: 0 2px 0 var(--shell-edge);
   opacity: 0;
@@ -445,15 +451,6 @@ body[data-view='analog'] {
 .mini.analog:hover .hover-keys {
   opacity: 1;
   pointer-events: auto;
-}
-.hover-keys .keys.compact {
-  gap: 3px;
-}
-.hover-keys .keys.compact .key {
-  height: 22px;
-}
-.hover-keys .keys.compact .key-face {
-  font-size: 10px;
 }
 
 @media (prefers-reduced-motion: reduce) {

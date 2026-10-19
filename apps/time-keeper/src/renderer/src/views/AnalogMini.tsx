@@ -9,7 +9,8 @@ const NUMBERS = [15, 30, 45]
 
 /**
  * 아날로그 미니: 주방 다이얼 타이머. 분침(빨간 바늘) 하나만, 기록 시작 시 0 에서 출발해
- * 60분에 한 바퀴. 숫자 시간은 없고 분야는 다이얼 테두리 색. 마우스를 올리면 키가 나타난다.
+ * 60분에 한 바퀴. 숫자 시간은 없고 분야는 다이얼 테두리 색.
+ * 마우스를 올리면 다이얼 위쪽(바깥)에 키 줄이 나타난다 — 다이얼 안에 두면 눈금과 겹쳐 읽기 어렵다.
  */
 export function AnalogMini({ state, now }: { state: TimerState; now: number }): React.JSX.Element {
   const selection = useSelection(state)
@@ -20,6 +21,9 @@ export function AnalogMini({ state, now }: { state: TimerState; now: number }): 
 
   return (
     <main className={`mini analog ${cat ? `cat-${cat}` : 'idle'}`} title={TEXT.miniHint} {...mini}>
+      <div className="hover-keys">
+        <TimerControls active={active} selection={selection} compact />
+      </div>
       <svg className="dial" viewBox="0 0 100 100" aria-hidden>
         <circle className="dial-body" cx="50" cy="50" r="49" />
         <circle className="dial-ring" cx="50" cy="50" r="44" />
@@ -54,9 +58,6 @@ export function AnalogMini({ state, now }: { state: TimerState; now: number }): 
         </g>
         <circle className="hub" cx="50" cy="50" r="4.5" />
       </svg>
-      <div className="hover-keys">
-        <TimerControls active={active} selection={selection} compact />
-      </div>
     </main>
   )
 }

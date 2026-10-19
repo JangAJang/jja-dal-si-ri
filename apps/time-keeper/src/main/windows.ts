@@ -20,7 +20,7 @@ interface WindowSpec {
 const SPECS: Record<ViewMode, WindowSpec> = {
   main: { width: 360, height: 500, mini: false },
   digital: { width: 260, height: 118, mini: true },
-  analog: { width: 200, height: 200, mini: true }
+  analog: { width: 220, height: 262, mini: true }
 }
 
 const windows = new Map<ViewMode, BrowserWindow>()
