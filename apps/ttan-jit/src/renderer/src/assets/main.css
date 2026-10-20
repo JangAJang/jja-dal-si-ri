@@ -61,7 +61,9 @@ body {
 .panel {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  /* 기본 크기 고정 — 패널 크기 설정은 zoom 으로 이 상자를 통째로 키운다. */
+  width: 360px;
+  height: 400px;
   padding: 8px;
   gap: 8px;
 }
@@ -341,4 +343,134 @@ body {
   border: 3px solid var(--sq-mark);
   border-radius: 50%;
   pointer-events: none;
+}
+
+/* 패널 톱니바퀴 → 설정 창 (#36) */
+.gear {
+  flex: none;
+  width: 28px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--ink-muted);
+  cursor: pointer;
+}
+
+.gear:hover {
+  color: var(--ink);
+}
+
+/* 설정 창 (#36) */
+.settings {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 16px;
+  min-height: 100%;
+}
+
+.settings h2 {
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.settings .value {
+  margin-left: 6px;
+  color: var(--ink-muted);
+  font-weight: 400;
+}
+
+.settings input[type='range'] {
+  width: 100%;
+  accent-color: var(--accent);
+}
+
+.hint {
+  margin-top: 6px;
+  color: var(--ink-muted);
+  font-size: 12px;
+}
+
+.corner-picker {
+  position: relative;
+  width: 160px;
+  height: 96px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.corner {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  cursor: pointer;
+}
+
+.corner[aria-checked='true'] {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+
+.corner-top-left {
+  top: -1px;
+  left: -1px;
+  border-radius: var(--radius) 0 var(--radius) 0;
+}
+
+.corner-top-right {
+  top: -1px;
+  right: -1px;
+  border-radius: 0 var(--radius) 0 var(--radius);
+}
+
+.corner-bottom-left {
+  bottom: -1px;
+  left: -1px;
+  border-radius: 0 var(--radius) 0 var(--radius);
+}
+
+.corner-bottom-right {
+  bottom: -1px;
+  right: -1px;
+  border-radius: var(--radius) 0 var(--radius) 0;
+}
+
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+.segmented {
+  display: flex;
+  gap: 4px;
+}
+
+.segmented .control {
+  flex: 1;
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  cursor: pointer;
+}
+
+.check input {
+  accent-color: var(--accent);
+}
+
+.quit {
+  align-self: flex-start;
+  margin-top: auto;
 }

@@ -2,8 +2,6 @@ import { BrowserWindow, app, screen, shell } from 'electron'
 import { join } from 'path'
 import { is } from '@electron-toolkit/utils'
 import {
-  DEFAULT_CORNER,
-  DEFAULT_DWELL_MS,
   HIDDEN,
   POLL_MS,
   VISIBLE_POLL_MS,
@@ -11,27 +9,17 @@ import {
   hotzoneRect,
   nextPanelState,
   panelRect,
-  type Corner,
   type PanelState
 } from '../shared/hotzone'
 import { IPC } from '../shared/ipc'
+import { DEFAULT_SETTINGS, panelSizeOf, type Settings } from '../shared/settings'
 
 // 패널 창의 유일한 주인. 숨긴 동안은 창을 실제로 숨기고(hide), 커서 위치를 폴링해 핫존을 감지한다.
-// 모서리·지연·화면 공유 숨김은 #36 설정에서 바꾼다.
-export interface PanelOptions {
-  corner: Corner
-  dwellMs: number
-  contentProtection: boolean
-}
-
+// 모서리·지연·크기·화면 공유 숨김은 설정(applyPanelSettings)을 따른다.
 let win: BrowserWindow | null = null
 let state: PanelState = HIDDEN
 let timer: NodeJS.Timeout | null = null
-let options: PanelOptions = {
-  corner: DEFAULT_CORNER,
-  dwellMs: DEFAULT_DWELL_MS,
-  contentProtection: true
-}
+let options: Settings = DEFAULT_SETTINGS
 
 function createWindow(): BrowserWindow {
   const w = new BrowserWindow({
@@ -80,7 +68,7 @@ function createWindow(): BrowserWindow {
 function show(): void {
   if (!win) return
   // 모니터 배치·해상도가 바뀌었을 수 있으니 띄울 때마다 위치를 다시 잡는다.
-  win.setBounds(panelRect(screen.getPrimaryDisplay().bounds, options.corner))
+  win.setBounds(panelRect(screen.getPrimaryDisplay().bounds, options.corner, panelSizeOf(options)))
   // 포커스를 뺏지 않는다 — 타이핑 중에 모서리를 스쳐도 입력이 끊기지 않게.
   win.showInactive()
   win.webContents.send(IPC.visibility, true)
@@ -134,8 +122,9 @@ export function stopPanel(): void {
   timer = null
 }
 
-export function setPanelOptions(next: Partial<PanelOptions>): void {
-  options = { ...options, ...next }
+/** 설정이 바뀌면 부른다. 떠 있던 패널은 숨겨 두고, 다음에 뜰 때 새 모서리·크기로 뜬다. */
+export function applyPanelSettings(next: Settings): void {
+  options = next
   win?.setContentProtection(options.contentProtection)
   if (state.visible) setState(HIDDEN)
 }

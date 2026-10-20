@@ -5,5 +5,15 @@ export const IPC = {
   /** renderer → main (invoke): 저장된 게임 읽기 → SavedGames */
   loadGames: 'games:load',
   /** renderer → main: 게임 저장 (SavedGames). main 이 모아서 쓴다. */
-  saveGames: 'games:save'
+  saveGames: 'games:save',
+  /** renderer → main (invoke): 설정 읽기 → Settings */
+  getSettings: 'settings:get',
+  /** renderer → main (invoke): 설정 일부 바꾸기 (Partial<Settings>) → Settings */
+  setSettings: 'settings:set',
+  /** main → 모든 창: 설정이 바뀌었다 (Settings) */
+  settingsChanged: 'settings:changed',
+  /** renderer → main: 설정 창 열기 */
+  openSettings: 'settings:open',
+  /** renderer → main: 앱 종료 */
+  quit: 'app:quit'
 } as const
