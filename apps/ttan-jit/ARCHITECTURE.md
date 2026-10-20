@@ -8,7 +8,8 @@ Electron 데스크톱 앱이다. main 프로세스가 패널 창 하나를 소�
 ```mermaid
 flowchart LR
   subgraph main["main 프로세스"]
-    life["index.ts<br/>단일 인스턴스·패널 창"]
+    life["index.ts<br/>앱 수명"]
+    panel["panel.ts<br/>커서 폴링·표시/숨김"]
   end
   subgraph preload
     api["window.api"]
@@ -18,18 +19,21 @@ flowchart LR
   end
   shared["shared/<br/>순수 규칙"]
 
-  life --> app
-  app --> api --> life
+  life --> panel
+  panel -- "IPC.visibility" --> api --> app
   app --> shared
-  life --> shared
+  panel --> shared
 ```
 
 ## 컴포넌트
-- **앱 수명** — 단일 인스턴스(두 번째 실행은 첫 인스턴스의 창을 띄우고 끝남), 패널 창 생성 — `src/main/index.ts`
+- **앱 수명** — 단일 인스턴스, mac Dock 숨김 — `src/main/index.ts`
+- **패널** — 창 하나를 만들어 두고 숨김/표시만 한다. 커서를 폴링(숨김 중 50ms, 표시 중 ≈16ms)해 `nextPanelState`로 판정, 띄울 때마다 주 모니터 모서리에 다시 붙이고 `showInactive`. 작업표시줄·Alt+Tab 숨김(Windows `toolbar`, mac `panel`), `screen-saver` 층 항상 위, 화면 캡처 제외 — `src/main/panel.ts`
+- **핫존 규칙** — 모서리 사각형·패널 위치·표시/숨김 상태 전이(순수 함수) — `src/shared/hotzone.ts`
+- **보임 신호** — main → renderer `IPC.visibility`, 렌더러 `usePanelVisible()` — `src/shared/ipc.ts`, `src/preload/index.ts`, `src/renderer/src/hooks.ts`
 - **패널 화면** — 체스/스도쿠 탭과 게임 자리 — `src/renderer/src/App.tsx`
 - **디자인 토큰** — 중성색, OS 다크/라이트 — `src/renderer/src/assets/main.css`
 
-이후 이슈에서 추가될 것: 핫존 감지·패널 표시/숨김(#33), 스도쿠(#34), 체스(#35), 설정·트레이(#36), 한/영 문구(#37).
+이후 이슈에서 추가될 것: 스도쿠(#34), 체스(#35), 설정·트레이(#36), 한/영 문구(#37).
 
 ## 주요 결정
 - **Electron 데스크톱 앱** — 업무 화면 위 어디서나 떠야 해서 OS 창이 필요하다. 웹·브라우저 확장은 버렸다 (`docs/design.md > 형태·배포`).

@@ -1,0 +1,138 @@
+import { BrowserWindow, app, screen, shell } from 'electron'
+import { join } from 'path'
+import { is } from '@electron-toolkit/utils'
+import {
+  DEFAULT_CORNER,
+  DEFAULT_DWELL_MS,
+  HIDDEN,
+  POLL_MS,
+  VISIBLE_POLL_MS,
+  contains,
+  hotzoneRect,
+  nextPanelState,
+  panelRect,
+  type Corner,
+  type PanelState
+} from '../shared/hotzone'
+import { IPC } from '../shared/ipc'
+
+// 패널 창의 유일한 주인. 숨긴 동안은 창을 실제로 숨기고(hide), 커서 위치를 폴링해 핫존을 감지한다.
+// 모서리·지연·화면 공유 숨김은 #36 설정에서 바꾼다.
+export interface PanelOptions {
+  corner: Corner
+  dwellMs: number
+  contentProtection: boolean
+}
+
+let win: BrowserWindow | null = null
+let state: PanelState = HIDDEN
+let timer: NodeJS.Timeout | null = null
+let options: PanelOptions = {
+  corner: DEFAULT_CORNER,
+  dwellMs: DEFAULT_DWELL_MS,
+  contentProtection: true
+}
+
+function createWindow(): BrowserWindow {
+  const w = new BrowserWindow({
+    width: 360,
+    height: 400,
+    show: false,
+    frame: false,
+    resizable: false,
+    movable: false,
+    minimizable: false,
+    maximizable: false,
+    fullscreenable: false,
+    // 작업표시줄·Alt+Tab 에서 숨김: Windows 는 toolbar(WS_EX_TOOLWINDOW), mac 은 포커스를 뺏지 않는 panel(NSPanel).
+    type: process.platform === 'darwin' ? 'panel' : 'toolbar',
+    skipTaskbar: true,
+    hiddenInMissionControl: true,
+    alwaysOnTop: true,
+    autoHideMenuBar: true,
+    webPreferences: {
+      preload: join(__dirname, '../preload/index.js'),
+      sandbox: false
+    }
+  })
+
+  // 작업표시줄·전체 화면 앱 위에도 뜨도록 가장 높은 층에 둔다.
+  w.setAlwaysOnTop(true, 'screen-saver')
+  w.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
+  w.setContentProtection(options.contentProtection)
+
+  w.webContents.setWindowOpenHandler((details) => {
+    shell.openExternal(details.url)
+    return { action: 'deny' }
+  })
+
+  if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
+    w.loadURL(process.env['ELECTRON_RENDERER_URL'])
+  } else {
+    w.loadFile(join(__dirname, '../renderer/index.html'))
+  }
+  return w
+}
+
+function show(): void {
+  if (!win) return
+  // 모니터 배치·해상도가 바뀌었을 수 있으니 띄울 때마다 위치를 다시 잡는다.
+  win.setBounds(panelRect(screen.getPrimaryDisplay().bounds, options.corner))
+  // 포커스를 뺏지 않는다 — 타이핑 중에 모서리를 스쳐도 입력이 끊기지 않게.
+  win.showInactive()
+  win.webContents.send(IPC.visibility, true)
+}
+
+function hide(): void {
+  if (!win || !win.isVisible()) return
+  const hadFocus = win.isFocused()
+  win.hide()
+  win.webContents.send(IPC.visibility, false)
+  // mac 에서 패널을 클릭해 앱이 활성화됐다면 이전 앱으로 돌려준다. Windows 는 hide 만으로 돌아간다.
+  if (hadFocus && process.platform === 'darwin') app.hide()
+}
+
+function setState(next: PanelState): void {
+  if (next.visible !== state.visible) {
+    if (next.visible) show()
+    else hide()
+  }
+  state = next
+}
+
+function cursorInPanel(): boolean {
+  return !!win && win.isVisible() && contains(win.getBounds(), screen.getCursorScreenPoint())
+}
+
+function tick(): void {
+  const cursor = screen.getCursorScreenPoint()
+  const display = screen.getPrimaryDisplay().bounds
+  setState(
+    nextPanelState(state, {
+      now: Date.now(),
+      inHotzone: contains(hotzoneRect(display, options.corner), cursor),
+      inPanel: cursorInPanel(),
+      dwellMs: options.dwellMs
+    })
+  )
+  // 보이는 동안은 한 프레임 간격으로 본다 — 숨김은 즉시여야 한다.
+  // 렌더러 mouseleave 는 포커스 없는 toolwindow 에서 오지 않아(Windows 실측) 쓰지 않는다.
+  timer = setTimeout(tick, state.visible ? VISIBLE_POLL_MS : POLL_MS)
+}
+
+export function startPanel(): void {
+  win = createWindow()
+  win.on('closed', () => (win = null))
+  tick()
+}
+
+export function stopPanel(): void {
+  if (timer) clearTimeout(timer)
+  timer = null
+}
+
+export function setPanelOptions(next: Partial<PanelOptions>): void {
+  options = { ...options, ...next }
+  win?.setContentProtection(options.contentProtection)
+  if (state.visible) setState(HIDDEN)
+}
