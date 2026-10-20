@@ -1,12 +1,18 @@
-import { contextBridge } from 'electron'
+import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
+import { IPC } from '../shared/ipc'
 
-// Custom APIs for renderer
-const api = {}
+const api = {
+  /** 패널이 보이거나 숨겨질 때마다 불린다. 해제 함수를 돌려준다. */
+  onVisibility(listener: (visible: boolean) => void): () => void {
+    const handler = (_: unknown, visible: boolean): void => listener(visible)
+    ipcRenderer.on(IPC.visibility, handler)
+    return () => ipcRenderer.off(IPC.visibility, handler)
+  }
+}
 
-// Use `contextBridge` APIs to expose Electron APIs to
-// renderer only if context isolation is enabled, otherwise
-// just add to the DOM global.
+export type Api = typeof api
+
 if (process.contextIsolated) {
   try {
     contextBridge.exposeInMainWorld('electron', electronAPI)

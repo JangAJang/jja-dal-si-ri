@@ -5,10 +5,10 @@
 ## 디렉토리 지도
 | 경로 | 역할 |
 |------|------|
-| `src/shared/` | main·renderer 공용 순수 로직 (Electron·Node API import 금지). 게임 규칙·생성기·설정 형식이 여기 온다 |
-| `src/main/` | Electron main 프로세스. `index.ts`(앱 수명·단일 인스턴스·패널 창) |
+| `src/shared/` | main·renderer 공용 순수 로직 (Electron·Node API import 금지). `hotzone.ts`(핫존·패널 위치, 표시/숨김 상태 전이), `ipc.ts`(채널 이름). 게임 규칙·생성기·설정 형식도 여기 온다 |
+| `src/main/` | Electron main 프로세스. `index.ts`(앱 수명·단일 인스턴스·Dock 숨김), `panel.ts`(패널 창의 유일한 주인 — 핫존 폴링·표시/숨김·창 속성) |
 | `src/preload/` | 렌더러에 `window.api` 노출. 타입은 `index.d.ts` |
-| `src/renderer/src/` | React 화면. `App.tsx`(게임 탭 패널), `assets/main.css`(디자인 토큰·전체 스타일) |
+| `src/renderer/src/` | React 화면. `App.tsx`(게임 탭 패널), `hooks.ts`(`usePanelVisible` — 숨기면 게임 멈춤), `assets/main.css`(디자인 토큰·전체 스타일) |
 | `docs/design.md` | 0.1.0 합의 설계와 기능별 이슈 번호 |
 | `electron-builder.yml` | 설치 파일 설정 (appId `com.muhayu.ttanjit`) |
 
@@ -27,6 +27,9 @@
 - `src/shared/`에서 Electron·Node API를 import하지 않는다 (렌더러에서도 쓰기 때문).
 - **숨김은 즉시다.** 패널을 숨기는 경로에 애니메이션·지연을 넣지 않는다. 숨기면 게임(스도쿠 타이머 포함)이 멈춰야 한다.
 - **패널은 포커스를 뺏지 않는다.** 패널을 띄울 때 `show()`가 아니라 `showInactive()`를 쓴다 (#33).
+- **패널 표시/숨김은 `src/main/panel.ts`만 한다.** 판정은 `hotzone.ts`의 `nextPanelState`. 렌더러는 `IPC.visibility`로 결과만 받는다.
+- 숨김 감지는 main 폴링이다 (숨김 중 50ms, 표시 중 한 틱 ≈ 16ms). 렌더러 `mouseleave`는 포커스 없는 toolwindow에서 오지 않아(Windows 실측) 쓰지 않는다. Windows 타이머 해상도가 15.6ms라 `setTimeout(16)`은 31ms가 된다.
+- 창 속성(`type: toolbar`/`panel`, `screen-saver` 층, `setContentProtection`)을 바꾸면 Windows에서 작업표시줄·Alt+Tab·캡처 숨김이 유지되는지 확인한다.
 - **체스 엔진·라이브러리는 MIT/BSD 계열만.** GPL(stockfish 등)은 설치 파일에 넣지 않는다 — 레포에 LICENSE가 없다.
 - 색은 `main.css` 맨 위 토큰만 쓴다. 다크 모드는 `prefers-color-scheme`으로 토큰만 바꾼다.
 - 저장 형식(게임 상태·설정)에는 `version` 필드를 두고, 바꾸면 기존 파일을 읽는 변환 코드를 함께 넣는다.
