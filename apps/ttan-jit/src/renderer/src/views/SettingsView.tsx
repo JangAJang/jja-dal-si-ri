@@ -1,19 +1,28 @@
+import { isCornerBlocked, pickDisplay, sortDisplays } from '../../../shared/displays'
 import {
-  CORNERS,
   DWELL_MAX_MS,
   DWELL_MIN_MS,
   LANGUAGES,
   PANEL_SIZES,
   type Settings
 } from '../../../shared/settings'
-import { useSettings } from '../hooks'
+import DisplayMap from '../components/DisplayMap'
+import { useDisplays, useSettings } from '../hooks'
 import { useT } from '../i18n'
 
 // 설정 창 (#settings). 바꾸는 즉시 main 이 저장하고 모든 창에 알린다.
 export default function SettingsView(): React.JSX.Element {
   const settings = useSettings()
+  const displays = useDisplays()
   const t = useT()
   if (!settings) return <main className="settings" />
+
+  // 핫존이 실제로 있는 모니터: 고른 모니터가 없으면(뽑힘) 주 모니터.
+  const active = pickDisplay(displays, settings.displayId)
+  const activeNo = active ? sortDisplays(displays).indexOf(active) + 1 : 0
+  const missing =
+    settings.displayId !== null && displays.length > 0 && active?.id !== settings.displayId
+  const blockedNow = !!active && isCornerBlocked(active, settings.corner, displays)
   const set = (patch: Partial<Settings>): void => void window.api.setSettings(patch)
 
   const toggle = (
@@ -34,23 +43,21 @@ export default function SettingsView(): React.JSX.Element {
     <main className="settings">
       <section>
         <h2>{t.settings.corner}</h2>
-        <div className="corner-picker" role="radiogroup" aria-label={t.settings.corner}>
-          {CORNERS.map((c) => (
-            <button
-              key={c}
-              role="radio"
-              aria-checked={settings.corner === c}
-              className={`corner corner-${c}`}
-              title={t.settings.corners[c]}
-              onClick={() => set({ corner: c })}
-            >
-              <span className="sr">{t.settings.corners[c]}</span>
-            </button>
-          ))}
-        </div>
-        <p className="hint">
-          {t.settings.corners[settings.corner]} · {t.settings.cornerHint}
-        </p>
+        <DisplayMap
+          displays={displays}
+          activeId={active?.id}
+          corner={settings.corner}
+          onPick={(d, corner) => set({ displayId: d.id, corner })}
+        />
+        {active && (
+          <p className="hint">
+            {t.settings.displayName(activeNo, active.primary)} ·{' '}
+            {t.settings.corners[settings.corner]}
+          </p>
+        )}
+        {missing && <p className="hint warn">{t.settings.missingDisplay}</p>}
+        {blockedNow && <p className="hint warn">{t.settings.blockedNow}</p>}
+        {displays.length > 1 && <p className="hint">{t.settings.blockedHint}</p>}
       </section>
 
       <section>

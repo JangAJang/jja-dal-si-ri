@@ -6,6 +6,8 @@ export type PanelSize = 'small' | 'medium' | 'large'
 
 export interface Settings {
   version: 1
+  /** 핫존을 둘 모니터 (Electron display.id). null 이면 주 모니터. 고른 모니터가 없어져도 주 모니터로. */
+  displayId: number | null
   corner: Corner
   /** 모서리에 이만큼 머물면 패널이 뜬다. */
   dwellMs: number
@@ -34,6 +36,7 @@ export const PANEL_SCALE: Record<PanelSize, number> = { small: 0.85, medium: 1, 
 
 export const DEFAULT_SETTINGS: Settings = {
   version: 1,
+  displayId: null,
   corner: DEFAULT_CORNER,
   dwellMs: DEFAULT_DWELL_MS,
   panelSize: 'medium',
@@ -58,6 +61,7 @@ export function normalizeSettings(raw: unknown): Settings {
       : DEFAULT_SETTINGS.dwellMs
   return {
     version: 1,
+    displayId: typeof s.displayId === 'number' && Number.isFinite(s.displayId) ? s.displayId : null,
     corner: CORNERS.includes(s.corner as Corner) ? (s.corner as Corner) : DEFAULT_SETTINGS.corner,
     dwellMs: dwell,
     panelSize: PANEL_SIZES.includes(s.panelSize as PanelSize)

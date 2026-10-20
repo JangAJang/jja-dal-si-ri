@@ -44,6 +44,7 @@ flowchart LR
 - **게임 저장** — 렌더러가 상태를 갖고 바뀔 때마다 `saveGames`, main 이 1초 모아 `userData/ttan-jit-games.json`에 원자적으로 쓰고 종료 시 flush. 읽을 때 `normalizeGames`로 검사(깨지면 새 판) — `src/main/gameStore.ts`, `src/shared/games.ts`
 - **설정** — `userData/settings.json`을 읽고 검사(`normalizeSettings`)해 들고 있다가, 바뀌면 원자적으로 쓰고 모든 창(`IPC.settingsChanged`)과 main 구독자(패널 모서리·지연·크기·캡처 숨김, 트레이)에 알린다 — `src/main/settingsService.ts`, 형식 `src/shared/settings.ts`, 화면 `views/SettingsView.tsx`
 - **설정 창** — 평범한 창 하나(`#settings` 해시로 같은 렌더러). 트레이 메뉴·패널 톱니바퀴·두 번째 실행에서 연다 — `src/main/settingsWindow.ts`
+- **모니터** — 모니터 목록(`DisplayInfo`)과 배치 변경 방송(`IPC.displaysChanged`, 떠 있던 패널은 숨김). 핫존 모니터 고르기(`pickDisplay`)·막힌 모서리 판정(`isCornerBlocked`)은 순수 함수. 설정 창은 배치를 비율대로 줄인 그림에 모니터마다 네 모서리 버튼(막힌 곳은 비활성) — `src/main/displays.ts`, `src/shared/displays.ts`, `components/DisplayMap.tsx`
 - **트레이** — 점 격자 아이콘(mac 템플릿·Windows 회색, `resources/tray*.png`), 설정·종료 메뉴, 설정으로 켜고 끔 — `src/main/tray.ts`
 - **문구 (한/영)** — 언어별 문구 묶음(`ko`·`en`, 같은 `Messages` 형식), 언어 결정(`resolveLocale`: 시스템 언어가 한국어면 한국어, 그 밖은 영어) — `src/shared/labels.ts`. OS 언어는 main 만 알아서 `settingsService`가 실제 언어(`locale`)를 설정에 붙여 보낸다. 렌더러는 `Root.tsx`가 `MessagesContext`로 내려주고 `useT()`(`src/renderer/src/i18n.ts`)로 받는다. main 문구(트레이·설정 창 제목)는 `messages()`
 - **보임 신호** — main → renderer `IPC.visibility`, 렌더러 `usePanelVisible()` — `src/shared/ipc.ts`, `src/preload/index.ts`, `src/renderer/src/hooks.ts`

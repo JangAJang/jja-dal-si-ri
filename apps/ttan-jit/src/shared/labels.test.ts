@@ -35,5 +35,7 @@ describe('문구 묶음', () => {
   it('함수 문구', () => {
     expect(ko.settings.seconds(500)).toBe('0.5초')
     expect(en.settings.seconds(1500)).toBe('1.5s')
+    expect(ko.settings.displayName(2, true)).toBe('2번 모니터(주)')
+    expect(en.settings.displayName(3, false)).toBe('Monitor 3')
   })
 })

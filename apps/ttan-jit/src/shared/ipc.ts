@@ -12,6 +12,10 @@ export const IPC = {
   setSettings: 'settings:set',
   /** main → 모든 창: 설정이 바뀌었다 (Settings) */
   settingsChanged: 'settings:changed',
+  /** renderer → main (invoke): 모니터 목록 → DisplayInfo[] */
+  getDisplays: 'displays:get',
+  /** main → 모든 창: 모니터를 꽂거나 뽑거나 배치가 바뀌었다 (DisplayInfo[]) */
+  displaysChanged: 'displays:changed',
   /** renderer → main: 설정 창 열기 */
   openSettings: 'settings:open',
   /** renderer → main: 앱 종료 */
