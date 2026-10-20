@@ -45,11 +45,11 @@ flowchart LR
 - **설정** — `userData/settings.json`을 읽고 검사(`normalizeSettings`)해 들고 있다가, 바뀌면 원자적으로 쓰고 모든 창(`IPC.settingsChanged`)과 main 구독자(패널 모서리·지연·크기·캡처 숨김, 트레이)에 알린다 — `src/main/settingsService.ts`, 형식 `src/shared/settings.ts`, 화면 `views/SettingsView.tsx`
 - **설정 창** — 평범한 창 하나(`#settings` 해시로 같은 렌더러). 트레이 메뉴·패널 톱니바퀴·두 번째 실행에서 연다 — `src/main/settingsWindow.ts`
 - **트레이** — 점 격자 아이콘(mac 템플릿·Windows 회색, `resources/tray*.png`), 설정·종료 메뉴, 설정으로 켜고 끔 — `src/main/tray.ts`
+- **문구 (한/영)** — 언어별 문구 묶음(`ko`·`en`, 같은 `Messages` 형식), 언어 결정(`resolveLocale`: 시스템 언어가 한국어면 한국어, 그 밖은 영어) — `src/shared/labels.ts`. OS 언어는 main 만 알아서 `settingsService`가 실제 언어(`locale`)를 설정에 붙여 보낸다. 렌더러는 `Root.tsx`가 `MessagesContext`로 내려주고 `useT()`(`src/renderer/src/i18n.ts`)로 받는다. main 문구(트레이·설정 창 제목)는 `messages()`
 - **보임 신호** — main → renderer `IPC.visibility`, 렌더러 `usePanelVisible()` — `src/shared/ipc.ts`, `src/preload/index.ts`, `src/renderer/src/hooks.ts`
 - **패널 화면** — 체스/스도쿠 탭과 게임 자리 — `src/renderer/src/App.tsx`
 - **디자인 토큰** — 중성색, OS 다크/라이트 — `src/renderer/src/assets/main.css`
 
-이후 이슈에서 추가될 것: 한/영 문구(#37).
 
 ## 주요 결정
 - **Electron 데스크톱 앱** — 업무 화면 위 어디서나 떠야 해서 OS 창이 필요하다. 웹·브라우저 확장은 버렸다 (`docs/design.md > 형태·배포`).

@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { Square } from 'chess.js'
-import { ko as t } from '../../../shared/labels'
 import {
   CHESS_LEVELS,
   applyMove,
@@ -13,6 +12,7 @@ import {
   type SideChoice
 } from '../../../shared/chess'
 import type { EngineReply, EngineRequest } from '../chessWorker'
+import { useT } from '../i18n'
 
 const CONFIRM_MS = 3000
 /** 컴퓨터가 너무 빨리 두면 정신없으니 최소 이만큼은 생각하는 척한다. */
@@ -36,6 +36,7 @@ interface Props {
 }
 
 export default function ChessView({ game, visible, onChange }: Props): React.JSX.Element {
+  const t = useT()
   const [selected, setSelected] = useState<string | null>(null)
   // 핸들러는 렌더를 기다리지 않고 최신 선택·끌기 상태를 봐야 한다 (빠른 연속 입력 대비).
   const selectedRef = useRef<string | null>(null)

@@ -1,5 +1,6 @@
 // 기기별 설정 형식 (userData/settings.json, docs/design.md > 설정). 게임 저장과는 다른 파일이다.
 import { DEFAULT_CORNER, DEFAULT_DWELL_MS, PANEL_SIZE, type Corner, type Size } from './hotzone'
+import type { Language, Locale } from './labels'
 
 export type PanelSize = 'small' | 'medium' | 'large'
 
@@ -14,10 +15,17 @@ export interface Settings {
   contentProtection: boolean
   /** 스도쿠 틀린 칸 빨간 표시. */
   showErrors: boolean
+  language: Language
+}
+
+/** main 이 OS 언어까지 따져 정한 실제 언어를 붙여서 렌더러에 보낸다 (렌더러는 OS 언어를 모른다). */
+export interface ResolvedSettings extends Settings {
+  locale: Locale
 }
 
 export const CORNERS: Corner[] = ['top-left', 'top-right', 'bottom-left', 'bottom-right']
 export const PANEL_SIZES: PanelSize[] = ['small', 'medium', 'large']
+export const LANGUAGES: Language[] = ['system', 'ko', 'en']
 export const DWELL_MIN_MS = 200
 export const DWELL_MAX_MS = 1500
 
@@ -31,7 +39,8 @@ export const DEFAULT_SETTINGS: Settings = {
   panelSize: 'medium',
   showTray: true,
   contentProtection: true,
-  showErrors: true
+  showErrors: true,
+  language: 'system'
 }
 
 export function panelSizeOf(s: Settings): Size {
@@ -56,6 +65,9 @@ export function normalizeSettings(raw: unknown): Settings {
       : DEFAULT_SETTINGS.panelSize,
     showTray: bool(s.showTray, DEFAULT_SETTINGS.showTray),
     contentProtection: bool(s.contentProtection, DEFAULT_SETTINGS.contentProtection),
-    showErrors: bool(s.showErrors, DEFAULT_SETTINGS.showErrors)
+    showErrors: bool(s.showErrors, DEFAULT_SETTINGS.showErrors),
+    language: LANGUAGES.includes(s.language as Language)
+      ? (s.language as Language)
+      : DEFAULT_SETTINGS.language
   }
 }

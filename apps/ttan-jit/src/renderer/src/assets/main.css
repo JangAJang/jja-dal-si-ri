@@ -368,7 +368,9 @@ body {
   flex-direction: column;
   gap: 18px;
   padding: 16px;
-  min-height: 100%;
+  /* body 는 패널용으로 스크롤을 막아 두니, 설정 화면은 스스로 스크롤한다 (영어 문구는 더 길다). */
+  height: 100%;
+  overflow-y: auto;
 }
 
 .settings h2 {

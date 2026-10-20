@@ -1,11 +1,14 @@
 import { BrowserWindow, app, shell } from 'electron'
 import { join } from 'path'
 import { is } from '@electron-toolkit/utils'
-import { ko as t } from '../shared/labels'
+import { messages, onSettingsChange } from './settingsService'
 
 // 설정 창 — 평범한 창 하나. 트레이 메뉴·패널 톱니바퀴·두 번째 실행에서 연다.
 // 트레이를 꺼도 앱을 한 번 더 실행하면 이 창이 떠서 되돌릴 수 있다 (docs/design.md > 흔적 지우기).
 let win: BrowserWindow | null = null
+
+// 언어가 바뀌면 창 제목도 바꾼다.
+onSettingsChange(() => win?.setTitle(messages().settings.windowTitle))
 
 export function openSettingsWindow(): void {
   if (win) {
@@ -16,12 +19,12 @@ export function openSettingsWindow(): void {
   }
   win = new BrowserWindow({
     width: 380,
-    height: 520,
+    height: 660,
     resizable: false,
     maximizable: false,
     fullscreenable: false,
     autoHideMenuBar: true,
-    title: t.settings.windowTitle,
+    title: messages().settings.windowTitle,
     show: false,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),

@@ -1,10 +1,10 @@
 import { useCallback, useEffect } from 'react'
 import { newChess, type ChessGame } from '../../shared/chess'
 import type { GameKind } from '../../shared/games'
-import { ko as t } from '../../shared/labels'
 import { PANEL_SCALE } from '../../shared/settings'
 import { newSudoku, type SudokuGame } from '../../shared/sudokuGame'
 import { useGames, usePanelVisible, useSettings } from './hooks'
+import { useT } from './i18n'
 import ChessView from './views/ChessView'
 import SudokuView from './views/SudokuView'
 
@@ -13,6 +13,7 @@ function App(): React.JSX.Element {
   const [games, update] = useGames()
   const visible = usePanelVisible()
   const settings = useSettings()
+  const t = useT()
 
   // 처음이거나 저장된 판이 깨졌으면 보통 난이도로 새 판.
   useEffect(() => {
