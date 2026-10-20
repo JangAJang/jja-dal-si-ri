@@ -15,18 +15,23 @@ import {
   type SudokuGame
 } from '../../../shared/sudokuGame'
 
-// 틀린 칸 표시 — 설정에서 끄는 것은 #36.
-const SHOW_ERRORS = true
 const CONFIRM_MS = 3000
 
 interface Props {
   game: SudokuGame
   /** 패널이 보이는지. 숨겨진 동안은 풀이 시간이 가지 않는다. */
   visible: boolean
+  /** 틀린 칸 빨간 표시 (설정). */
+  showErrors: boolean
   onChange: (fn: (g: SudokuGame) => SudokuGame) => void
 }
 
-export default function SudokuView({ game, visible, onChange }: Props): React.JSX.Element {
+export default function SudokuView({
+  game,
+  visible,
+  showErrors,
+  onChange
+}: Props): React.JSX.Element {
   const [selected, setSelected] = useState<number | null>(null)
   const [noteMode, setNoteMode] = useState(false)
   const [difficulty, setDifficulty] = useState<Difficulty>(game.difficulty)
@@ -116,7 +121,7 @@ export default function SudokuView({ game, visible, onChange }: Props): React.JS
   const cellClass = (i: number): string => {
     const cls = ['cell']
     if (isGiven(game, i)) cls.push('given')
-    if (SHOW_ERRORS && isWrong(game, i)) cls.push('wrong')
+    if (showErrors && isWrong(game, i)) cls.push('wrong')
     if (i === selected) cls.push('selected')
     else if (selected !== null && PEERS[selected].includes(i)) cls.push('peer')
     if (selValue && game.values[i] === selValue && i !== selected) cls.push('same')

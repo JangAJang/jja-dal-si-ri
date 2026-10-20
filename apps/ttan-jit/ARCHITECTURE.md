@@ -10,6 +10,8 @@ flowchart LR
   subgraph main["main 프로세스"]
     life["index.ts<br/>앱 수명"]
     panel["panel.ts<br/>커서 폴링·표시/숨김"]
+    settings["settingsService.ts"]
+    tray["tray.ts"]
   end
   subgraph preload
     api["window.api"]
@@ -26,6 +28,9 @@ flowchart LR
   panel --> shared
   app -- "loadGames / saveGames" --> api --> store["gameStore.ts"] --> file
   life --> store
+  settings -- "applyPanelSettings" --> panel
+  settings --> tray
+  settings -- "IPC.settingsChanged" --> api
 ```
 
 ## 컴포넌트
@@ -37,11 +42,14 @@ flowchart LR
 - **체스 규칙** — 시작 위치부터의 수 목록(UCI)을 chess.js로 다시 둬서 판을 만들고, 수 두기(폰은 퀸 승격)·체크메이트·스테일메이트·삼수 동형·기물 부족·50수 판정 — `src/shared/chess.ts`
 - **체스 컴퓨터** — js-chess-engine을 Worker에서 돌린다(난이도 → 엔진 레벨·무작위 폭은 `ENGINE`). 답이 오면 최소 350ms 생각한 척 뒤에 두고, 요청 뒤 판이 바뀌었으면 버린다 — `src/renderer/src/chessWorker.ts`, 화면 `views/ChessView.tsx`
 - **게임 저장** — 렌더러가 상태를 갖고 바뀔 때마다 `saveGames`, main 이 1초 모아 `userData/ttan-jit-games.json`에 원자적으로 쓰고 종료 시 flush. 읽을 때 `normalizeGames`로 검사(깨지면 새 판) — `src/main/gameStore.ts`, `src/shared/games.ts`
+- **설정** — `userData/settings.json`을 읽고 검사(`normalizeSettings`)해 들고 있다가, 바뀌면 원자적으로 쓰고 모든 창(`IPC.settingsChanged`)과 main 구독자(패널 모서리·지연·크기·캡처 숨김, 트레이)에 알린다 — `src/main/settingsService.ts`, 형식 `src/shared/settings.ts`, 화면 `views/SettingsView.tsx`
+- **설정 창** — 평범한 창 하나(`#settings` 해시로 같은 렌더러). 트레이 메뉴·패널 톱니바퀴·두 번째 실행에서 연다 — `src/main/settingsWindow.ts`
+- **트레이** — 점 격자 아이콘(mac 템플릿·Windows 회색, `resources/tray*.png`), 설정·종료 메뉴, 설정으로 켜고 끔 — `src/main/tray.ts`
 - **보임 신호** — main → renderer `IPC.visibility`, 렌더러 `usePanelVisible()` — `src/shared/ipc.ts`, `src/preload/index.ts`, `src/renderer/src/hooks.ts`
 - **패널 화면** — 체스/스도쿠 탭과 게임 자리 — `src/renderer/src/App.tsx`
 - **디자인 토큰** — 중성색, OS 다크/라이트 — `src/renderer/src/assets/main.css`
 
-이후 이슈에서 추가될 것: 설정·트레이(#36), 한/영 문구(#37).
+이후 이슈에서 추가될 것: 한/영 문구(#37).
 
 ## 주요 결정
 - **Electron 데스크톱 앱** — 업무 화면 위 어디서나 떠야 해서 OS 창이 필요하다. 웹·브라우저 확장은 버렸다 (`docs/design.md > 형태·배포`).
