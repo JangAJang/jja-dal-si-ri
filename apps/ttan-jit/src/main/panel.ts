@@ -52,7 +52,10 @@ function createWindow(): BrowserWindow {
     autoHideMenuBar: true,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
-      sandbox: false
+      sandbox: false,
+      // 숨긴 동안에도 타이머를 늦추지 않는다 — 계산 중이던 컴퓨터 수를 제때 두고, 다시 띄울 때 옛 화면이 보이지 않게.
+      // 숨긴 동안 도는 타이머는 없어서(스도쿠 시간은 멈춤) 비용은 거의 없다.
+      backgroundThrottling: false
     }
   })
 

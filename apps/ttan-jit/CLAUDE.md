@@ -5,10 +5,10 @@
 ## 디렉토리 지도
 | 경로 | 역할 |
 |------|------|
-| `src/shared/` | main·renderer 공용 순수 로직 (Electron·Node API import 금지). `hotzone.ts`(핫존·패널 위치, 표시/숨김 상태 전이), `ipc.ts`(채널 이름), `sudoku.ts`(풀이·유일해 생성·싱글 판정), `sudokuGame.ts`(한 판의 조작·되돌리기·시간·저장 검사), `games.ts`(게임 저장 파일 형식), `labels.ts`(화면 문구) |
+| `src/shared/` | main·renderer 공용 순수 로직 (Electron·Node API import 금지). `hotzone.ts`(핫존·패널 위치, 표시/숨김 상태 전이), `ipc.ts`(채널 이름), `sudoku.ts`(풀이·유일해 생성·싱글 판정), `sudokuGame.ts`(한 판의 조작·되돌리기·시간·저장 검사), `chess.ts`(체스 상태·수 두기·판정·저장 검사 — chess.js 기반), `games.ts`(게임 저장 파일 형식), `labels.ts`(화면 문구) |
 | `src/main/` | Electron main 프로세스. `index.ts`(앱 수명·단일 인스턴스·Dock 숨김), `panel.ts`(패널 창의 유일한 주인 — 핫존 폴링·표시/숨김·창 속성), `gameStore.ts`(게임 저장 — 1초 모아 쓰기·종료 시 flush) |
 | `src/preload/` | 렌더러에 `window.api` 노출. 타입은 `index.d.ts` |
-| `src/renderer/src/` | React 화면. `App.tsx`(게임 탭 패널), `hooks.ts`(`usePanelVisible` — 숨기면 게임 멈춤, `useGames` — 저장된 게임 읽기·저장), `views/SudokuView.tsx`, `assets/main.css`(디자인 토큰·전체 스타일) |
+| `src/renderer/src/` | React 화면. `App.tsx`(게임 탭 패널), `hooks.ts`(`usePanelVisible` — 숨기면 게임 멈춤, `useGames` — 저장된 게임 읽기·저장), `views/SudokuView.tsx`, `views/ChessView.tsx`, `chessWorker.ts`(컴퓨터 수 계산 Worker — js-chess-engine), `assets/main.css`(디자인 토큰·전체 스타일) |
 | `docs/design.md` | 0.1.0 합의 설계와 기능별 이슈 번호 |
 | `electron-builder.yml` | 설치 파일 설정 (appId `com.muhayu.ttanjit`) |
 
@@ -35,6 +35,9 @@
 - 저장 형식(게임 상태·설정)에는 `version` 필드를 두고, 바꾸면 기존 파일을 읽는 변환 코드를 함께 넣는다.
 - **게임 상태는 렌더러가 갖고, main 은 저장만 한다** (`IPC.loadGames`/`saveGames`). 한 판의 조작은 `sudokuGame.ts`의 순수 함수(새 객체 반환)로만 바꾼다.
 - 화면 글자는 `src/shared/labels.ts`에서 가져온다 (영어 묶음은 #37).
+- **체스 판은 수 목록(UCI)만 저장하고 `replay()`로 다시 만든다.** 수는 내 수·컴퓨터 수 모두 `applyMove()`로만 둔다. 컴퓨터 수는 Worker에서 계산하고, 요청 당시와 수 개수가 다르면 버린다. 내 수도 고를 때 본 판과 수 개수가 같을 때만 둔다.
+- 체스 난이도 → 엔진 설정은 `chess.ts`의 `ENGINE` 하나에서만 바꾼다.
+- **실제 마우스를 움직이는 자동 시험(`SetCursorPos` 등)은 하지 않는다.** 사용자가 마우스를 쓰는 중이면 커서가 튀고, 숨은 패널 아래의 다른 창이 클릭된다(#35 때 실제로 일어남). 화면 동작은 `npx electron-vite dev --remoteDebuggingPort 9333`으로 띄우고 CDP `Runtime.evaluate`로 DOM 이벤트를 보내 확인한다. 숨긴 창은 `Page.captureScreenshot`이 멈추니 쓰지 않는다.
 - 화면을 눈으로 확인할 때는 화면 공유 숨김 때문에 스크린샷에 패널이 안 찍힌다 — `panel.ts`의 `contentProtection` 기본값을 잠시 `false`로 바꾸고, 커밋 전에 되돌린다.
 - 다른 앱(time-keeper 등) 코드를 import하지 않는다. 필요하면 복사한다.
 

@@ -138,7 +138,7 @@ export default function SudokuView({ game, visible, onChange }: Props): React.JS
           ))}
         </select>
         <button className={`control${confirming ? ' warn' : ''}`} onClick={startNew}>
-          {confirming ? t.sudoku.confirmNewGame : t.sudoku.newGame}
+          {confirming ? t.confirmNewGame : t.newGame}
         </button>
         <span className="elapsed">{formatElapsed(game.elapsedMs)}</span>
       </div>

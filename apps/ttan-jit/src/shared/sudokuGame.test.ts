@@ -132,6 +132,10 @@ describe('저장 형식 검사', () => {
 
   it('게임 파일: 모르는 값은 기본값으로', () => {
     expect(normalizeGames(undefined)).toEqual(EMPTY_GAMES)
+    expect(
+      normalizeGames({ chess: { version: 1, level: 'easy', player: 'w', moves: ['e2e4'] } }).chess
+        ?.moves
+    ).toEqual(['e2e4'])
     expect(normalizeGames({ lastGame: 'tetris', sudoku: 'x' })).toEqual(EMPTY_GAMES)
     expect(normalizeGames({ lastGame: 'chess' }).lastGame).toBe('chess')
   })
