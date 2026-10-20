@@ -1,0 +1,6 @@
+# prettier(endOfLine: lf)와 맞춘다 — Windows autocrlf 로 체크아웃해도 린트가 깨지지 않게.
+* text=auto eol=lf
+*.ico binary
+*.icns binary
+*.png binary
+*.woff2 binary
