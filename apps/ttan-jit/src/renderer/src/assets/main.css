@@ -12,6 +12,9 @@
   --peer: #ecefef;
   --same: #e1e6d8;
   --error: #b5483b;
+  --sq-light: #e6e4dc;
+  --sq-dark: #a8ada8;
+  --sq-mark: rgba(91, 107, 115, 0.45);
   --radius: 6px;
   --font: system-ui, -apple-system, 'Segoe UI', 'Malgun Gothic', sans-serif;
   color-scheme: light dark;
@@ -30,6 +33,9 @@
     --peer: #303235;
     --same: #3b4134;
     --error: #e07a6c;
+    --sq-light: #8b8f8c;
+    --sq-dark: #5d6361;
+    --sq-mark: rgba(143, 162, 171, 0.55);
   }
 }
 
@@ -238,4 +244,101 @@ body {
 .digit.done {
   color: var(--ink-muted);
   opacity: 0.5;
+}
+
+/* 체스 (#35) — 360×400 패널 안: 툴바 26 + 판 304(38px × 8) */
+.chess {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+}
+
+.status {
+  margin-left: auto;
+  color: var(--ink-muted);
+  white-space: nowrap;
+}
+
+.status.over {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.chessboard {
+  align-self: center;
+  display: grid;
+  grid-template-columns: repeat(8, 38px);
+  grid-auto-rows: 38px;
+  border: 1px solid var(--line-strong);
+  touch-action: none;
+}
+
+.square {
+  position: relative;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.square.light {
+  background: var(--sq-light);
+}
+
+.square.dark {
+  background: var(--sq-dark);
+}
+
+.square.last::before,
+.square.selected::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--sq-mark);
+}
+
+.square.check::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--error) 55%, transparent);
+}
+
+.piece {
+  position: relative;
+  font-size: 30px;
+  line-height: 1;
+  font-family: 'Segoe UI Symbol', 'Apple Symbols', 'DejaVu Sans', serif;
+  pointer-events: none;
+}
+
+.piece-w {
+  color: #fbfbf8;
+  text-shadow:
+    0 0 1px #1d1d1b,
+    0 0 1px #1d1d1b,
+    0 0 1px #1d1d1b;
+}
+
+.piece-b {
+  color: #1d1d1b;
+  text-shadow: 0 0 1px #fbfbf8;
+}
+
+.dot {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--sq-mark);
+  pointer-events: none;
+}
+
+.capture {
+  position: absolute;
+  inset: 3px;
+  border: 3px solid var(--sq-mark);
+  border-radius: 50%;
+  pointer-events: none;
 }
