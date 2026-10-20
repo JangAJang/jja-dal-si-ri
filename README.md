@@ -9,6 +9,7 @@
 | 앱 | 설명 | 현재 버전 | 상태 | 주소 | 변경 이력 |
 |----|------|----------|------|------|----------|
 | [짜달시리 타이머](apps/time-keeper) | 일·쉼·공부 시간을 기록하고 분야별로 얼마나 썼는지 보는 데스크톱 타이머 (Windows·Mac) | - (첫 릴리스 전) | 개발중 | [다운로드](https://github.com/JangAJang/jja-dal-si-ri/releases) | [CHANGELOG](apps/time-keeper/CHANGELOG.md) |
+| [짜달시리 딴짓](apps/ttan-jit) | 화면 모서리에 마우스를 올리면 체스·스도쿠가 나타나고, 치우면 사라지는 딴짓 앱 (Windows·Mac) | - (첫 릴리스 전) | 개발중 | [다운로드](https://github.com/JangAJang/jja-dal-si-ri/releases) | [CHANGELOG](apps/ttan-jit/CHANGELOG.md) |
 
 - **상태**: `개발중`(0.x) · `사용중`(1.0 이상) · `보관`(더 이상 손대지 않음)
 - **주소**: `docker compose up` 후 브라우저에서 열 주소입니다. 화면이 없는 앱은 `-`, 설치해서 쓰는 데스크톱 앱은 다운로드 페이지(Releases) 링크를 적습니다.

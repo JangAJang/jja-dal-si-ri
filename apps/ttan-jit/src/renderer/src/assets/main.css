@@ -1,0 +1,82 @@
+/* 디자인 토큰 — 작고 차분한 중성색, OS 다크/라이트를 따라간다 (docs/design.md > 화면·디자인).
+   색은 여기 토큰만 쓰고 즉석에서 새 색을 만들지 않는다. */
+:root {
+  --bg: #f4f4f2;
+  --surface: #ffffff;
+  --line: #d9d9d4;
+  --ink: #2b2b29;
+  --ink-muted: #75756f;
+  --accent: #5b6b73;
+  --radius: 6px;
+  --font: system-ui, -apple-system, 'Segoe UI', 'Malgun Gothic', sans-serif;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1f2021;
+    --surface: #2a2b2d;
+    --line: #3a3c3e;
+    --ink: #e4e4e1;
+    --ink-muted: #9a9a95;
+    --accent: #8fa2ab;
+  }
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font: 13px/1.4 var(--font);
+  user-select: none;
+  overflow: hidden;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 8px;
+  gap: 8px;
+}
+
+.tabs {
+  display: flex;
+  gap: 4px;
+}
+
+.tab {
+  flex: 1;
+  padding: 4px 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--ink-muted);
+  font: inherit;
+  cursor: pointer;
+}
+
+.tab[aria-selected='true'] {
+  background: var(--surface);
+  color: var(--ink);
+  border-color: var(--accent);
+}
+
+.board-slot {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  border: 1px dashed var(--line);
+  border-radius: var(--radius);
+  color: var(--ink-muted);
+}

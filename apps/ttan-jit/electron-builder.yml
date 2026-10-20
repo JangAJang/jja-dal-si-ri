@@ -1,0 +1,32 @@
+appId: com.muhayu.ttanjit
+productName: 짜달시리 딴짓
+directories:
+  buildResources: build
+files:
+  - '!**/.vscode/*'
+  - '!src/*'
+  - '!electron.vite.config.{js,ts,mjs,cjs}'
+  - '!{.eslintcache,eslint.config.mjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md,CLAUDE.md,ARCHITECTURE.md,docs}'
+  - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
+  - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
+asarUnpack:
+  - resources/**
+win:
+  executableName: ttan-jit
+  target:
+    - nsis
+nsis:
+  # 파일명에는 한글 productName 대신 package.json name(ttan-jit)을 쓴다 — URL·셸에서 다루기 쉽게.
+  artifactName: ${name}-${version}-setup.${ext}
+  shortcutName: ${productName}
+  uninstallDisplayName: ${productName}
+  createDesktopShortcut: always
+mac:
+  entitlementsInherit: build/entitlements.mac.plist
+  target:
+    - target: dmg
+      arch: universal
+  notarize: false
+dmg:
+  artifactName: ${name}-${version}-${arch}.${ext}
+npmRebuild: false
