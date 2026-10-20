@@ -17,7 +17,8 @@ describe('normalizeSettings', () => {
         panelSize: 'huge',
         showTray: 'yes',
         dwellMs: 'fast',
-        language: 'fr'
+        language: 'fr',
+        displayId: 'main'
       })
     ).toEqual(DEFAULT_SETTINGS)
   })
@@ -25,6 +26,7 @@ describe('normalizeSettings', () => {
   it('맞는 값은 그대로', () => {
     const s = {
       version: 1,
+      displayId: 2779098405,
       corner: 'bottom-left',
       dwellMs: 800,
       panelSize: 'large',

@@ -9,10 +9,13 @@ import {
   hotzoneRect,
   nextPanelState,
   panelRect,
-  type PanelState
+  type PanelState,
+  type Rect
 } from '../shared/hotzone'
+import { pickDisplay } from '../shared/displays'
 import { IPC } from '../shared/ipc'
 import { DEFAULT_SETTINGS, panelSizeOf, type Settings } from '../shared/settings'
+import { listDisplays } from './displays'
 
 // 패널 창의 유일한 주인. 숨긴 동안은 창을 실제로 숨기고(hide), 커서 위치를 폴링해 핫존을 감지한다.
 // 모서리·지연·크기·화면 공유 숨김은 설정(applyPanelSettings)을 따른다.
@@ -65,10 +68,15 @@ function createWindow(): BrowserWindow {
   return w
 }
 
+/** 핫존을 둘 모니터의 영역 — 고른 모니터가 없으면(뽑힘) 주 모니터 (#45). */
+function targetBounds(): Rect {
+  return pickDisplay(listDisplays(), options.displayId)?.bounds ?? screen.getPrimaryDisplay().bounds
+}
+
 function show(): void {
   if (!win) return
   // 모니터 배치·해상도가 바뀌었을 수 있으니 띄울 때마다 위치를 다시 잡는다.
-  win.setBounds(panelRect(screen.getPrimaryDisplay().bounds, options.corner, panelSizeOf(options)))
+  win.setBounds(panelRect(targetBounds(), options.corner, panelSizeOf(options)))
   // 포커스를 뺏지 않는다 — 타이핑 중에 모서리를 스쳐도 입력이 끊기지 않게.
   win.showInactive()
   win.webContents.send(IPC.visibility, true)
@@ -97,7 +105,7 @@ function cursorInPanel(): boolean {
 
 function tick(): void {
   const cursor = screen.getCursorScreenPoint()
-  const display = screen.getPrimaryDisplay().bounds
+  const display = targetBounds()
   setState(
     nextPanelState(state, {
       now: Date.now(),
@@ -126,5 +134,10 @@ export function stopPanel(): void {
 export function applyPanelSettings(next: Settings): void {
   options = next
   win?.setContentProtection(options.contentProtection)
+  hidePanel()
+}
+
+/** 떠 있던 패널을 숨긴다 (설정·모니터 배치가 바뀌었을 때). 다음에 뜰 때 새 위치로 뜬다. */
+export function hidePanel(): void {
   if (state.visible) setState(HIDDEN)
 }

@@ -396,51 +396,96 @@ body {
   font-size: 12px;
 }
 
-.corner-picker {
+/* 모니터 배치 그림 (#45) — OS 배치를 비율대로 줄여 그린다 */
+.display-map {
   position: relative;
-  width: 160px;
-  height: 96px;
+  margin: 4px 0;
+}
+
+.display {
+  position: absolute;
   border: 1px solid var(--line-strong);
-  border-radius: var(--radius);
+  border-radius: 3px;
   background: var(--surface);
 }
 
-.corner {
+.display.active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.display-name {
   position: absolute;
-  width: 28px;
-  height: 28px;
-  border: 1px solid var(--line);
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  color: var(--ink-muted);
+  font-size: 13px;
+  line-height: 1.1;
+  pointer-events: none;
+}
+
+.display-name small {
+  font-size: 10px;
+}
+
+.dcorner {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 1px solid var(--line-strong);
   background: var(--bg);
   cursor: pointer;
 }
 
-.corner[aria-checked='true'] {
+.dcorner[aria-checked='true'] {
   border-color: var(--accent);
   background: var(--accent);
 }
 
-.corner-top-left {
+.dcorner:disabled {
+  border-style: dashed;
+  border-color: var(--line);
+  background: transparent;
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* 고른 모서리가 (배치가 바뀌어) 막혔으면 어디인지 보이게 */
+.dcorner:disabled[aria-checked='true'] {
+  border-style: solid;
+  border-color: var(--error);
+  opacity: 1;
+}
+
+.dcorner-top-left {
   top: -1px;
   left: -1px;
-  border-radius: var(--radius) 0 var(--radius) 0;
+  border-radius: 3px 0 3px 0;
 }
 
-.corner-top-right {
+.dcorner-top-right {
   top: -1px;
   right: -1px;
-  border-radius: 0 var(--radius) 0 var(--radius);
+  border-radius: 0 3px 0 3px;
 }
 
-.corner-bottom-left {
+.dcorner-bottom-left {
   bottom: -1px;
   left: -1px;
-  border-radius: 0 var(--radius) 0 var(--radius);
+  border-radius: 0 3px 0 3px;
 }
 
-.corner-bottom-right {
+.dcorner-bottom-right {
   bottom: -1px;
   right: -1px;
-  border-radius: var(--radius) 0 var(--radius) 0;
+  border-radius: 3px 0 3px 0;
+}
+
+.hint.warn {
+  color: var(--error);
 }
 
 .sr {

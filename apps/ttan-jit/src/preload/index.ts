@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 import { IPC } from '../shared/ipc'
+import type { DisplayInfo } from '../shared/displays'
 import type { SavedGames } from '../shared/games'
 import type { ResolvedSettings, Settings } from '../shared/settings'
 
@@ -27,6 +28,10 @@ const api = {
     return ipcRenderer.invoke(IPC.setSettings, patch)
   },
   onSettings: (listener: (s: ResolvedSettings) => void) => subscribe(IPC.settingsChanged, listener),
+  getDisplays(): Promise<DisplayInfo[]> {
+    return ipcRenderer.invoke(IPC.getDisplays)
+  },
+  onDisplays: (listener: (all: DisplayInfo[]) => void) => subscribe(IPC.displaysChanged, listener),
   openSettings(): void {
     ipcRenderer.send(IPC.openSettings)
   },

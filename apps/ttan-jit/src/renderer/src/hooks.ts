@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import type { DisplayInfo } from '../../shared/displays'
 import type { SavedGames } from '../../shared/games'
 import type { ResolvedSettings } from '../../shared/settings'
 
@@ -17,6 +18,16 @@ export function useSettings(): ResolvedSettings | null {
     return window.api.onSettings(setSettings)
   }, [])
   return settings
+}
+
+/** 모니터 목록. 꽂거나 뽑거나 배치가 바뀌면 다시 그린다. */
+export function useDisplays(): DisplayInfo[] {
+  const [displays, setDisplays] = useState<DisplayInfo[]>([])
+  useEffect(() => {
+    window.api.getDisplays().then(setDisplays)
+    return window.api.onDisplays(setDisplays)
+  }, [])
+  return displays
 }
 
 /** 저장된 게임을 읽고, 바뀔 때마다 main 에 저장을 맡긴다. 읽기 전에는 null. */

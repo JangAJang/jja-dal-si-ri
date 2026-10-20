@@ -31,9 +31,12 @@ export const ko = {
   tray: { settings: '설정', quit: '종료' },
   settings: {
     windowTitle: 'ttan-jit 설정',
-    corner: '모서리',
-    cornerHint:
-      '모니터가 여러 대면 다른 모니터와 안 맞닿은 모서리를 골라. 맞닿은 쪽은 커서가 넘어가서 잘 안 걸려.',
+    corner: '나타날 자리',
+    displayName: (n: number, primary: boolean): string => `${n}번 모니터${primary ? '(주)' : ''}`,
+    mainBadge: '주',
+    blockedHint: '흐린 모서리는 옆 모니터와 맞닿아서 커서가 넘어가 버려. 그래서 못 골라.',
+    blockedNow: '지금 배치에서는 이 모서리가 막혀 있어. 다른 모서리를 골라.',
+    missingDisplay: '고른 모니터가 연결돼 있지 않아서 주 모니터를 쓰는 중이야.',
     corners: {
       'top-left': '왼쪽 위',
       'top-right': '오른쪽 위',
@@ -82,9 +85,13 @@ export const en: Messages = {
   tray: { settings: 'Settings', quit: 'Quit' },
   settings: {
     windowTitle: 'ttan-jit settings',
-    corner: 'Corner',
-    cornerHint:
-      "Got more than one monitor? Pick a corner that doesn't touch another screen — the cursor slips right past those.",
+    corner: 'Where it shows up',
+    displayName: (n: number, primary: boolean): string => `Monitor ${n}${primary ? ' (main)' : ''}`,
+    mainBadge: 'Main',
+    blockedHint:
+      "Faded corners touch another monitor — the cursor slips past them, so they can't be picked.",
+    blockedNow: 'This corner is blocked in the current layout. Pick another one.',
+    missingDisplay: "The monitor you picked isn't connected, so the main one is used.",
     corners: {
       'top-left': 'Top left',
       'top-right': 'Top right',

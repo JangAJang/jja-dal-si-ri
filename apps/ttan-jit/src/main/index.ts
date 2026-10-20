@@ -1,7 +1,8 @@
 import { app, ipcMain } from 'electron'
 import { electronApp, optimizer } from '@electron-toolkit/utils'
 import { IPC } from '../shared/ipc'
-import { applyPanelSettings, startPanel, stopPanel } from './panel'
+import { applyPanelSettings, hidePanel, startPanel, stopPanel } from './panel'
+import { startDisplays } from './displays'
 import { flushGames, registerGameStore } from './gameStore'
 import { getSettings, messages, onSettingsChange, startSettings } from './settingsService'
 import { openSettingsWindow } from './settingsWindow'
@@ -27,6 +28,7 @@ if (!app.requestSingleInstanceLock()) {
 
     startSettings()
     registerGameStore()
+    startDisplays(hidePanel)
     ipcMain.on(IPC.openSettings, openSettingsWindow)
     ipcMain.on(IPC.quit, () => app.quit())
 
