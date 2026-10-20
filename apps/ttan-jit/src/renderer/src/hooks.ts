@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { SavedGames } from '../../shared/games'
-import type { Settings } from '../../shared/settings'
+import type { ResolvedSettings } from '../../shared/settings'
 
 /** 패널이 보이는지. 게임은 false 일 때 시계를 멈춘다 (docs/design.md > 게임 공통). */
 export function usePanelVisible(): boolean {
@@ -10,8 +10,8 @@ export function usePanelVisible(): boolean {
 }
 
 /** 설정. 처음 읽기 전에는 null, 이후 바뀔 때마다 다시 그린다. */
-export function useSettings(): Settings | null {
-  const [settings, setSettings] = useState<Settings | null>(null)
+export function useSettings(): ResolvedSettings | null {
+  const [settings, setSettings] = useState<ResolvedSettings | null>(null)
   useEffect(() => {
     window.api.getSettings().then(setSettings)
     return window.api.onSettings(setSettings)

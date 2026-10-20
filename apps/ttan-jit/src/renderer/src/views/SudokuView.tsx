@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react'
-import { ko as t } from '../../../shared/labels'
 import { DIFFICULTIES, PEERS, bit, type Difficulty } from '../../../shared/sudoku'
 import {
   addElapsed,
@@ -14,6 +13,7 @@ import {
   undo,
   type SudokuGame
 } from '../../../shared/sudokuGame'
+import { useT } from '../i18n'
 
 const CONFIRM_MS = 3000
 
@@ -32,6 +32,7 @@ export default function SudokuView({
   showErrors,
   onChange
 }: Props): React.JSX.Element {
+  const t = useT()
   const [selected, setSelected] = useState<number | null>(null)
   const [noteMode, setNoteMode] = useState(false)
   const [difficulty, setDifficulty] = useState<Difficulty>(game.difficulty)

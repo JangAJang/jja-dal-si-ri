@@ -1,16 +1,18 @@
-import { ko as t } from '../../../shared/labels'
 import {
   CORNERS,
   DWELL_MAX_MS,
   DWELL_MIN_MS,
+  LANGUAGES,
   PANEL_SIZES,
   type Settings
 } from '../../../shared/settings'
 import { useSettings } from '../hooks'
+import { useT } from '../i18n'
 
 // 설정 창 (#settings). 바꾸는 즉시 main 이 저장하고 모든 창에 알린다.
 export default function SettingsView(): React.JSX.Element {
   const settings = useSettings()
+  const t = useT()
   if (!settings) return <main className="settings" />
   const set = (patch: Partial<Settings>): void => void window.api.setSettings(patch)
 
@@ -76,6 +78,22 @@ export default function SettingsView(): React.JSX.Element {
               onClick={() => set({ panelSize: s })}
             >
               {t.settings.sizes[s]}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <h2>{t.settings.language}</h2>
+        <div className="segmented">
+          {LANGUAGES.map((l) => (
+            <button
+              key={l}
+              className="control"
+              aria-pressed={settings.language === l}
+              onClick={() => set({ language: l })}
+            >
+              {t.settings.languages[l]}
             </button>
           ))}
         </div>

@@ -12,7 +12,13 @@ describe('normalizeSettings', () => {
     expect(normalizeSettings(undefined)).toEqual(DEFAULT_SETTINGS)
     expect(normalizeSettings('x')).toEqual(DEFAULT_SETTINGS)
     expect(
-      normalizeSettings({ corner: 'middle', panelSize: 'huge', showTray: 'yes', dwellMs: 'fast' })
+      normalizeSettings({
+        corner: 'middle',
+        panelSize: 'huge',
+        showTray: 'yes',
+        dwellMs: 'fast',
+        language: 'fr'
+      })
     ).toEqual(DEFAULT_SETTINGS)
   })
 
@@ -24,7 +30,8 @@ describe('normalizeSettings', () => {
       panelSize: 'large',
       showTray: false,
       contentProtection: false,
-      showErrors: false
+      showErrors: false,
+      language: 'en'
     }
     expect(normalizeSettings(s)).toEqual(s)
   })

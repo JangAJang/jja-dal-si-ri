@@ -3,9 +3,9 @@ import { electronApp, optimizer } from '@electron-toolkit/utils'
 import { IPC } from '../shared/ipc'
 import { applyPanelSettings, startPanel, stopPanel } from './panel'
 import { flushGames, registerGameStore } from './gameStore'
-import { getSettings, onSettingsChange, startSettings } from './settingsService'
+import { getSettings, messages, onSettingsChange, startSettings } from './settingsService'
 import { openSettingsWindow } from './settingsWindow'
-import { setTrayVisible } from './tray'
+import { updateTray } from './tray'
 
 const trayActions = { openSettings: openSettingsWindow, quit: () => app.quit() }
 
@@ -32,10 +32,10 @@ if (!app.requestSingleInstanceLock()) {
 
     const settings = getSettings()
     applyPanelSettings(settings)
-    setTrayVisible(settings.showTray, trayActions)
+    updateTray(settings.showTray, messages(), trayActions)
     onSettingsChange((s) => {
       applyPanelSettings(s)
-      setTrayVisible(s.showTray, trayActions)
+      updateTray(s.showTray, messages(), trayActions)
     })
     startPanel()
   })

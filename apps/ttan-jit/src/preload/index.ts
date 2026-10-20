@@ -2,7 +2,7 @@ import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 import { IPC } from '../shared/ipc'
 import type { SavedGames } from '../shared/games'
-import type { Settings } from '../shared/settings'
+import type { ResolvedSettings, Settings } from '../shared/settings'
 
 /** main → renderer 방송을 구독한다. 해제 함수를 돌려준다. */
 function subscribe<T>(channel: string, listener: (value: T) => void): () => void {
@@ -20,13 +20,13 @@ const api = {
   saveGames(data: SavedGames): void {
     ipcRenderer.send(IPC.saveGames, data)
   },
-  getSettings(): Promise<Settings> {
+  getSettings(): Promise<ResolvedSettings> {
     return ipcRenderer.invoke(IPC.getSettings)
   },
-  setSettings(patch: Partial<Settings>): Promise<Settings> {
+  setSettings(patch: Partial<Settings>): Promise<ResolvedSettings> {
     return ipcRenderer.invoke(IPC.setSettings, patch)
   },
-  onSettings: (listener: (s: Settings) => void) => subscribe(IPC.settingsChanged, listener),
+  onSettings: (listener: (s: ResolvedSettings) => void) => subscribe(IPC.settingsChanged, listener),
   openSettings(): void {
     ipcRenderer.send(IPC.openSettings)
   },
