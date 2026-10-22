@@ -3,10 +3,12 @@ import type { Square } from 'chess.js'
 import {
   CHESS_LEVELS,
   applyMove,
+  canUndo,
   newChess,
   replay,
   statusOf,
   targets,
+  undoMove,
   type ChessGame,
   type ChessLevel,
   type SideChoice
@@ -148,6 +150,12 @@ export default function ChessView({ game, visible, onChange }: Props): React.JSX
     onChange(() => newChess(level, side))
   }
 
+  // 무르기: 내 마지막 수까지. 컴퓨터가 생각 중이면 그 계산은 수 개수가 달라져 버려진다.
+  const undo = (): void => {
+    select(null)
+    onChange(undoMove)
+  }
+
   const statusText = (): string => {
     if (!status) return ''
     if (status.kind === 'checkmate')
@@ -178,7 +186,7 @@ export default function ChessView({ game, visible, onChange }: Props): React.JSX
         >
           {CHESS_LEVELS.map((l) => (
             <option key={l} value={l}>
-              {t.difficulty[l]}
+              {t.chess.levels[l]}
             </option>
           ))}
         </select>
@@ -196,9 +204,6 @@ export default function ChessView({ game, visible, onChange }: Props): React.JSX
         <button className={`control${confirming ? ' warn' : ''}`} onClick={startNew}>
           {confirming ? t.confirmNewGame : t.newGame}
         </button>
-        <span className={`status${status && status.kind !== 'playing' ? ' over' : ''}`}>
-          {statusText()}
-        </span>
       </div>
 
       <div className="chessboard" onPointerLeave={() => (draggingRef.current = false)}>
@@ -225,6 +230,15 @@ export default function ChessView({ game, visible, onChange }: Props): React.JSX
             )
           })
         )}
+      </div>
+
+      <div className="chess-footer">
+        <span className={`status${status && status.kind !== 'playing' ? ' over' : ''}`}>
+          {statusText()}
+        </span>
+        <button className="control" onClick={undo} disabled={!canUndo(game)}>
+          {t.chess.undo}
+        </button>
       </div>
     </section>
   )

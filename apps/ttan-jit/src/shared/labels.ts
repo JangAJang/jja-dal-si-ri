@@ -19,6 +19,9 @@ export const ko = {
     solved: '다 풀었다!'
   },
   chess: {
+    // 스도쿠와 따로 — 체스는 4단계 (#47)
+    levels: { easy: '쉬움', medium: '보통', hard: '어려움', veryHard: '매우 어려움' },
+    undo: '무르기',
     side: { w: '백', b: '흑', random: '무작위' },
     yourTurn: '네 차례',
     thinking: '생각 중…',
@@ -74,6 +77,8 @@ export const en: Messages = {
     solved: 'Solved it!'
   },
   chess: {
+    levels: { easy: 'Easy', medium: 'Medium', hard: 'Hard', veryHard: 'Very hard' },
+    undo: 'Undo',
     side: { w: 'White', b: 'Black', random: 'Random' },
     yourTurn: 'Your move',
     thinking: 'Thinking…',

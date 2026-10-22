@@ -41,7 +41,8 @@
 - 화면 확인용으로 앱을 하나 더 띄울 때는 `electron.exe . --user-data-dir=<임시 폴더>`로 띄운다 — 단일 인스턴스 잠금이 데이터 폴더 단위라 사용자가 띄워 둔 앱과 부딪치지 않는다.
 - **트레이를 꺼도 돌아올 길이 있어야 한다** — 두 번째 실행 → 설정 창(`second-instance`). 이 경로를 없애지 않는다.
 - **체스 판은 수 목록(UCI)만 저장하고 `replay()`로 다시 만든다.** 수는 내 수·컴퓨터 수 모두 `applyMove()`로만 둔다. 컴퓨터 수는 Worker에서 계산하고, 요청 당시와 수 개수가 다르면 버린다. 내 수도 고를 때 본 판과 수 개수가 같을 때만 둔다.
-- 체스 난이도 → 엔진 설정은 `chess.ts`의 `ENGINE` 하나에서만 바꾼다.
+- 체스 난이도 → 엔진 설정은 `chess.ts`의 `ENGINE` 하나에서만 바꾼다. 난이도 이름·개수를 바꾸면 저장 형식 `version`을 올리고 옛 이름을 같은 세기로 옮기는 변환(`normalizeChess`)을 넣는다 (#47: 형식 1 → 2).
+- 무르기는 `undoMove`(내 마지막 수까지)로만 한다. 체스 문구는 `t.chess.levels`(4단계)이고 스도쿠의 `t.difficulty`(3단계)와 따로다.
 - **실제 마우스를 움직이는 자동 시험(`SetCursorPos` 등)은 하지 않는다.** 사용자가 마우스를 쓰는 중이면 커서가 튀고, 숨은 패널 아래의 다른 창이 클릭된다(#35 때 실제로 일어남). 화면 동작은 `npx electron-vite dev --remoteDebuggingPort 9333`으로 띄우고 CDP `Runtime.evaluate`로 DOM 이벤트를 보내 확인한다. 숨긴 창은 `Page.captureScreenshot`이 멈추니 쓰지 않는다.
 - 화면을 눈으로 확인할 때는 화면 공유 숨김 때문에 스크린샷에 패널이 안 찍힌다 — `panel.ts`의 `contentProtection` 기본값을 잠시 `false`로 바꾸고, 커밋 전에 되돌린다.
 - 다른 앱(time-keeper 등) 코드를 import하지 않는다. 필요하면 복사한다.
