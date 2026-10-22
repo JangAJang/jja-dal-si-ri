@@ -39,6 +39,7 @@
 - **패널 크기는 CSS `zoom`이다** (`.panel`은 360×400 고정, `PANEL_SCALE` 배율). `webContents.setZoomFactor`는 같은 출처의 설정 창까지 바꾸므로 쓰지 않는다. 패널 레이아웃은 기본 크기 기준 px로 짠다.
 - **핫존 모니터는 `pickDisplay(listDisplays(), displayId)`로만 찾는다** — 고른 모니터가 없으면 주 모니터. 막힌 모서리 판정은 `isCornerBlocked`(꼭짓점에서 가로·세로 한 칸 밖에 다른 모니터가 있으면 막힘)이고, 바꾸면 `displays.test.ts`(사용자 실제 배치 포함)를 고친다.
 - 화면 확인용으로 앱을 하나 더 띄울 때는 `electron.exe . --user-data-dir=<임시 폴더>`로 띄운다 — 단일 인스턴스 잠금이 데이터 폴더 단위라 사용자가 띄워 둔 앱과 부딪치지 않는다.
+- **앱 종료는 트레이·설정 창의 [종료](`app.quit()`)로만.** 패널 창은 `close`를 막고 숨기기만 하며(종료 중 `quitting`일 때만 닫힘), `window-all-closed`는 아무것도 안 한다, 앱 메뉴는 없다(`Menu.setApplicationMenu(null)`) — 패널이 닫히면 앱 전체가 꺼지던 버그(#51)를 다시 만들지 않는다.
 - **트레이를 꺼도 돌아올 길이 있어야 한다** — 두 번째 실행 → 설정 창(`second-instance`). 이 경로를 없애지 않는다.
 - **체스 판은 수 목록(UCI)만 저장하고 `replay()`로 다시 만든다.** 수는 내 수·컴퓨터 수 모두 `applyMove()`로만 둔다. 컴퓨터 수는 Worker에서 계산하고, 요청 당시와 수 개수가 다르면 버린다. 내 수도 고를 때 본 판과 수 개수가 같을 때만 둔다.
 - 체스 난이도 → 엔진 설정은 `chess.ts`의 `ENGINE` 하나에서만 바꾼다. 난이도 이름·개수를 바꾸면 저장 형식 `version`을 올리고 옛 이름을 같은 세기로 옮기는 변환(`normalizeChess`)을 넣는다 (#47: 형식 1 → 2).
