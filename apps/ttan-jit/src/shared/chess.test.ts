@@ -3,12 +3,14 @@ import { ai } from 'js-chess-engine'
 import {
   ENGINE,
   applyMove,
+  canUndo,
   fromEngineMove,
   newChess,
   normalizeChess,
   replay,
   statusOf,
   targets,
+  undoMove,
   type ChessGame
 } from './chess'
 
@@ -101,5 +103,60 @@ describe('저장 형식 검사', () => {
     expect(normalizeChess({ ...g, level: 'god' })).toBeNull()
     expect(normalizeChess({ ...g, moves: ['e2e5'] })).toBeNull()
     expect(normalizeChess({ ...g, moves: ['hello'] })).toBeNull()
+    expect(normalizeChess({ ...g, version: 3 })).toBeNull()
+  })
+
+  it('저장 형식 1은 같은 엔진 세기의 새 난이도로 옮긴다 (#47)', () => {
+    const v1 = (level: string): unknown => ({ version: 1, level, player: 'w', moves: ['e2e4'] })
+    expect(normalizeChess(v1('easy'))).toEqual({
+      version: 2,
+      level: 'medium',
+      player: 'w',
+      moves: ['e2e4']
+    })
+    expect(normalizeChess(v1('medium'))?.level).toBe('hard')
+    expect(normalizeChess(v1('hard'))?.level).toBe('veryHard')
+    expect(normalizeChess(v1('veryHard'))).toBeNull() // 형식 1에는 없던 이름
+  })
+})
+
+describe('무르기', () => {
+  it('내 차례: 컴퓨터 응수와 내 수 두 수를 무른다', () => {
+    const g = play(newChess('easy', 'w'), 'e2e4', 'e7e5', 'g1f3', 'b8c6')
+    expect(undoMove(g).moves).toEqual(['e2e4', 'e7e5'])
+    expect(undoMove(undoMove(g)).moves).toEqual([])
+  })
+
+  it('컴퓨터 차례(생각 중): 내 수 하나만 무른다', () => {
+    const g = play(newChess('easy', 'w'), 'e2e4', 'e7e5', 'g1f3')
+    expect(undoMove(g).moves).toEqual(['e2e4', 'e7e5'])
+  })
+
+  it('흑일 때: 컴퓨터 첫 수는 무르지 않는다', () => {
+    const b = newChess('easy', 'b')
+    const afterEngine = play(b, 'e2e4')
+    expect(canUndo(afterEngine)).toBe(false)
+    expect(undoMove(afterEngine)).toBe(afterEngine)
+    const g = play(b, 'e2e4', 'e7e5', 'g1f3')
+    expect(undoMove(g).moves).toEqual(['e2e4'])
+  })
+
+  it('시작 판은 무를 게 없다', () => {
+    const g = newChess('easy', 'w')
+    expect(canUndo(g)).toBe(false)
+    expect(undoMove(g)).toBe(g)
+  })
+
+  it('끝난 판도 무를 수 있다 — 내가 당한 메이트', () => {
+    const mated = play(newChess('easy', 'w'), 'f2f3', 'e7e5', 'g2g4', 'd8h4')
+    expect(statusOf(replay(mated.moves)!).kind).toBe('checkmate')
+    const back = undoMove(mated)
+    expect(back.moves).toEqual(['f2f3', 'e7e5'])
+    expect(statusOf(replay(back.moves)!)).toEqual({ kind: 'playing', check: false })
+  })
+
+  it('끝난 판도 무를 수 있다 — 내가 건 메이트는 내 수 하나', () => {
+    const mate = play(newChess('easy', 'b'), 'f2f3', 'e7e5', 'g2g4', 'd8h4')
+    expect(undoMove(mate).moves).toEqual(['f2f3', 'e7e5', 'g2g4'])
   })
 })

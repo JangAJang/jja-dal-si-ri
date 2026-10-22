@@ -248,7 +248,7 @@ body {
   opacity: 0.5;
 }
 
-/* 체스 (#35) — 360×400 패널 안: 툴바 26 + 판 304(38px × 8) */
+/* 체스 (#35, #47) — 360×400 패널 안: 툴바 26 + 판 272(34px × 8) + 상태·무르기 줄 26 */
 .chess {
   flex: 1;
   display: flex;
@@ -258,9 +258,19 @@ body {
 }
 
 .status {
-  margin-left: auto;
   color: var(--ink-muted);
   white-space: nowrap;
+}
+
+.chess-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.control:disabled {
+  opacity: 0.45;
+  cursor: default;
 }
 
 .status.over {
@@ -271,8 +281,8 @@ body {
 .chessboard {
   align-self: center;
   display: grid;
-  grid-template-columns: repeat(8, 38px);
-  grid-auto-rows: 38px;
+  grid-template-columns: repeat(8, 34px);
+  grid-auto-rows: 34px;
   border: 1px solid var(--line-strong);
   touch-action: none;
 }
@@ -309,7 +319,7 @@ body {
 
 .piece {
   position: relative;
-  font-size: 30px;
+  font-size: 27px;
   line-height: 1;
   font-family: 'Segoe UI Symbol', 'Apple Symbols', 'DejaVu Sans', serif;
   pointer-events: none;

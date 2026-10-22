@@ -18,7 +18,7 @@ function App(): React.JSX.Element {
   // 처음이거나 저장된 판이 깨졌으면 보통 난이도로 새 판.
   useEffect(() => {
     if (games && !games.sudoku) update((g) => ({ ...g, sudoku: newSudoku('medium') }))
-    if (games && !games.chess) update((g) => ({ ...g, chess: newChess('medium', 'w') }))
+    if (games && !games.chess) update((g) => ({ ...g, chess: newChess('easy', 'w') }))
   }, [games, update])
 
   const setSudoku = useCallback(

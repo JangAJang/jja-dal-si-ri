@@ -39,7 +39,7 @@ flowchart LR
 - **핫존 규칙** — 모서리 사각형·패널 위치·표시/숨김 상태 전이(순수 함수) — `src/shared/hotzone.ts`
 - **스도쿠 규칙** — 비트마스크 백트래킹 풀이·해 개수, 무작위 완성 판에서 유일해를 지키며 지우는 생성, 싱글만으로 풀리는지 판정(쉬움·보통은 싱글로 풀림, 어려움은 안 풀림) — `src/shared/sudoku.ts`
 - **스도쿠 한 판** — 숫자·메모·지우기·되돌리기(최대 100)·풀이 시간·저장 검사, 모두 새 객체를 돌려주는 순수 함수 — `src/shared/sudokuGame.ts`, 화면 `src/renderer/src/views/SudokuView.tsx`
-- **체스 규칙** — 시작 위치부터의 수 목록(UCI)을 chess.js로 다시 둬서 판을 만들고, 수 두기(폰은 퀸 승격)·체크메이트·스테일메이트·삼수 동형·기물 부족·50수 판정 — `src/shared/chess.ts`
+- **체스 규칙** — 시작 위치부터의 수 목록(UCI)을 chess.js로 다시 둬서 판을 만들고, 수 두기(폰은 퀸 승격)·무르기(`undoMove`, 내 마지막 수까지)·저장 형식 1→2 변환·체크메이트·스테일메이트·삼수 동형·기물 부족·50수 판정 — `src/shared/chess.ts`
 - **체스 컴퓨터** — js-chess-engine을 Worker에서 돌린다(난이도 → 엔진 레벨·무작위 폭은 `ENGINE`). 답이 오면 최소 350ms 생각한 척 뒤에 두고, 요청 뒤 판이 바뀌었으면 버린다 — `src/renderer/src/chessWorker.ts`, 화면 `views/ChessView.tsx`
 - **게임 저장** — 렌더러가 상태를 갖고 바뀔 때마다 `saveGames`, main 이 1초 모아 `userData/ttan-jit-games.json`에 원자적으로 쓰고 종료 시 flush. 읽을 때 `normalizeGames`로 검사(깨지면 새 판) — `src/main/gameStore.ts`, `src/shared/games.ts`
 - **설정** — `userData/settings.json`을 읽고 검사(`normalizeSettings`)해 들고 있다가, 바뀌면 원자적으로 쓰고 모든 창(`IPC.settingsChanged`)과 main 구독자(패널 모서리·지연·크기·캡처 숨김, 트레이)에 알린다 — `src/main/settingsService.ts`, 형식 `src/shared/settings.ts`, 화면 `views/SettingsView.tsx`
