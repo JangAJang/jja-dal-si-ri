@@ -35,7 +35,7 @@ flowchart LR
 
 ## 컴포넌트
 - **앱 수명** — 단일 인스턴스, mac Dock 숨김 — `src/main/index.ts`
-- **패널** — 창 하나를 만들어 두고 숨김/표시만 한다. 커서를 폴링(숨김 중 50ms, 표시 중 ≈16ms)해 `nextPanelState`로 판정, 띄울 때마다 주 모니터 모서리에 다시 붙이고 `showInactive`. 작업표시줄·Alt+Tab 숨김(Windows `toolbar`, mac `panel`), `screen-saver` 층 항상 위, 화면 캡처 제외 — `src/main/panel.ts`
+- **패널** — 창 하나를 만들어 두고 숨김/표시만 한다. 사용자가 닫을 수 없고(`close` → 숨김, 종료 중에만 닫힘), 렌더러가 죽으면 다시 불러온다(1분에 3번까지) (#51). 커서를 폴링(숨김 중 50ms, 표시 중 ≈16ms)해 `nextPanelState`로 판정, 띄울 때마다 주 모니터 모서리에 다시 붙이고 `showInactive`. 작업표시줄·Alt+Tab 숨김(Windows `toolbar`, mac `panel`), `screen-saver` 층 항상 위, 화면 캡처 제외 — `src/main/panel.ts`
 - **핫존 규칙** — 모서리 사각형·패널 위치·표시/숨김 상태 전이(순수 함수) — `src/shared/hotzone.ts`
 - **스도쿠 규칙** — 비트마스크 백트래킹 풀이·해 개수, 무작위 완성 판에서 유일해를 지키며 지우는 생성, 싱글만으로 풀리는지 판정(쉬움·보통은 싱글로 풀림, 어려움은 안 풀림) — `src/shared/sudoku.ts`
 - **스도쿠 한 판** — 숫자·메모·지우기·되돌리기(최대 100)·풀이 시간·저장 검사, 모두 새 객체를 돌려주는 순수 함수 — `src/shared/sudokuGame.ts`, 화면 `src/renderer/src/views/SudokuView.tsx`

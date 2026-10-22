@@ -23,6 +23,12 @@ let win: BrowserWindow | null = null
 let state: PanelState = HIDDEN
 let timer: NodeJS.Timeout | null = null
 let options: Settings = DEFAULT_SETTINGS
+/** 종료 중일 때만 패널 창이 닫힌다 (#51). */
+let quitting = false
+/** 렌더러가 죽으면 다시 불러오되, 계속 죽으면 멈춘다. */
+const RELOAD_LIMIT = 3
+const RELOAD_WINDOW_MS = 60_000
+let reloads: number[] = []
 
 function createWindow(): BrowserWindow {
   const w = new BrowserWindow({
@@ -122,11 +128,29 @@ function tick(): void {
 
 export function startPanel(): void {
   win = createWindow()
+  // 사용자가 닫지 못한다(Alt+F4 등) — 패널은 숨기기만 하는 창이고, 보통 유일한 창이라
+  // 닫히면 앱 전체가 꺼지던 문제가 있었다 (#51). 종료 중일 때만 닫는다.
+  win.on('close', (e) => {
+    if (quitting) return
+    e.preventDefault()
+    setState(HIDDEN)
+  })
   win.on('closed', () => (win = null))
+  // 화면(렌더러)이 죽으면 다시 불러온다 — 빈 창으로 남지 않게. 1분에 3번 넘게 죽으면 멈춘다.
+  win.webContents.on('render-process-gone', (_, details) => {
+    console.error('[ttan-jit] panel renderer gone:', details.reason)
+    if (details.reason === 'clean-exit' || quitting) return
+    const now = Date.now()
+    reloads = reloads.filter((t) => now - t < RELOAD_WINDOW_MS)
+    if (reloads.length >= RELOAD_LIMIT) return
+    reloads.push(now)
+    win?.webContents.reload()
+  })
   tick()
 }
 
 export function stopPanel(): void {
+  quitting = true
   if (timer) clearTimeout(timer)
   timer = null
 }
