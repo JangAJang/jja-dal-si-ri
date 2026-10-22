@@ -17,6 +17,7 @@ describe('normalizeSettings', () => {
         panelSize: 'huge',
         showTray: 'yes',
         dwellMs: 'fast',
+        opacity: null,
         language: 'fr',
         displayId: 'main'
       })
@@ -30,12 +31,20 @@ describe('normalizeSettings', () => {
       corner: 'bottom-left',
       dwellMs: 800,
       panelSize: 'large',
+      opacity: 0.6,
       showTray: false,
       contentProtection: false,
       showErrors: false,
       language: 'en'
     }
     expect(normalizeSettings(s)).toEqual(s)
+  })
+
+  it('진하기는 0.2~1, 5% 단위로', () => {
+    expect(normalizeSettings({ opacity: 0 }).opacity).toBe(0.2)
+    expect(normalizeSettings({ opacity: 3 }).opacity).toBe(1)
+    expect(normalizeSettings({ opacity: 0.62 }).opacity).toBe(0.6)
+    expect(normalizeSettings({ opacity: 'x' }).opacity).toBe(1)
   })
 
   it('지연은 범위 안으로 자르고 정수로', () => {
