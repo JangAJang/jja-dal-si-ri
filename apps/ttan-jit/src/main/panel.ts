@@ -54,6 +54,7 @@ function createWindow(): BrowserWindow {
   w.setAlwaysOnTop(true, 'screen-saver')
   w.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
   w.setContentProtection(options.contentProtection)
+  w.setOpacity(options.opacity)
 
   w.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url)
@@ -134,6 +135,8 @@ export function stopPanel(): void {
 export function applyPanelSettings(next: Settings): void {
   options = next
   win?.setContentProtection(options.contentProtection)
+  // 창 전체를 반투명하게 — 뒤의 업무 화면이 비친다 (#49). Linux 는 지원하지 않는다.
+  win?.setOpacity(options.opacity)
   hidePanel()
 }
 

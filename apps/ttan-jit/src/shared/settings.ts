@@ -12,6 +12,8 @@ export interface Settings {
   /** 모서리에 이만큼 머물면 패널이 뜬다. */
   dwellMs: number
   panelSize: PanelSize
+  /** 패널 창 진하기(불투명도) 0.2~1. 낮추면 뒤 화면이 비쳐 옆에서 흘깃 봐도 잘 안 띈다 (#49). */
+  opacity: number
   showTray: boolean
   /** 화면 공유·녹화·스크린샷에 패널이 찍히지 않게. */
   contentProtection: boolean
@@ -30,6 +32,8 @@ export const PANEL_SIZES: PanelSize[] = ['small', 'medium', 'large']
 export const LANGUAGES: Language[] = ['system', 'ko', 'en']
 export const DWELL_MIN_MS = 200
 export const DWELL_MAX_MS = 1500
+export const OPACITY_MIN = 0.2
+export const OPACITY_STEP = 0.05
 
 /** 패널 크기 → 배율. 화면은 CSS zoom 으로, 창은 기본 크기 × 배율로 키운다. */
 export const PANEL_SCALE: Record<PanelSize, number> = { small: 0.85, medium: 1, large: 1.2 }
@@ -40,6 +44,7 @@ export const DEFAULT_SETTINGS: Settings = {
   corner: DEFAULT_CORNER,
   dwellMs: DEFAULT_DWELL_MS,
   panelSize: 'medium',
+  opacity: 1,
   showTray: true,
   contentProtection: true,
   showErrors: true,
@@ -67,6 +72,16 @@ export function normalizeSettings(raw: unknown): Settings {
     panelSize: PANEL_SIZES.includes(s.panelSize as PanelSize)
       ? (s.panelSize as PanelSize)
       : DEFAULT_SETTINGS.panelSize,
+    opacity:
+      typeof s.opacity === 'number' && Number.isFinite(s.opacity)
+        ? Math.min(
+            1,
+            Math.max(
+              OPACITY_MIN,
+              Math.round(s.opacity / OPACITY_STEP) / Math.round(1 / OPACITY_STEP)
+            )
+          )
+        : DEFAULT_SETTINGS.opacity,
     showTray: bool(s.showTray, DEFAULT_SETTINGS.showTray),
     contentProtection: bool(s.contentProtection, DEFAULT_SETTINGS.contentProtection),
     showErrors: bool(s.showErrors, DEFAULT_SETTINGS.showErrors),

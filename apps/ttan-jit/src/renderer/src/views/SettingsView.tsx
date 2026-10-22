@@ -3,6 +3,8 @@ import {
   DWELL_MAX_MS,
   DWELL_MIN_MS,
   LANGUAGES,
+  OPACITY_MIN,
+  OPACITY_STEP,
   PANEL_SIZES,
   type Settings
 } from '../../../shared/settings'
@@ -88,6 +90,21 @@ export default function SettingsView(): React.JSX.Element {
             </button>
           ))}
         </div>
+      </section>
+
+      <section>
+        <h2>
+          {t.settings.opacity} <span className="value">{t.settings.percent(settings.opacity)}</span>
+        </h2>
+        <input
+          type="range"
+          min={OPACITY_MIN}
+          max={1}
+          step={OPACITY_STEP}
+          value={settings.opacity}
+          onChange={(e) => set({ opacity: Number(e.target.value) })}
+        />
+        <p className="hint">{t.settings.opacityHint}</p>
       </section>
 
       <section>

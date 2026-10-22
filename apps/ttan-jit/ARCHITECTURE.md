@@ -42,7 +42,7 @@ flowchart LR
 - **체스 규칙** — 시작 위치부터의 수 목록(UCI)을 chess.js로 다시 둬서 판을 만들고, 수 두기(폰은 퀸 승격)·무르기(`undoMove`, 내 마지막 수까지)·저장 형식 1→2 변환·체크메이트·스테일메이트·삼수 동형·기물 부족·50수 판정 — `src/shared/chess.ts`
 - **체스 컴퓨터** — js-chess-engine을 Worker에서 돌린다(난이도 → 엔진 레벨·무작위 폭은 `ENGINE`). 답이 오면 최소 350ms 생각한 척 뒤에 두고, 요청 뒤 판이 바뀌었으면 버린다 — `src/renderer/src/chessWorker.ts`, 화면 `views/ChessView.tsx`
 - **게임 저장** — 렌더러가 상태를 갖고 바뀔 때마다 `saveGames`, main 이 1초 모아 `userData/ttan-jit-games.json`에 원자적으로 쓰고 종료 시 flush. 읽을 때 `normalizeGames`로 검사(깨지면 새 판) — `src/main/gameStore.ts`, `src/shared/games.ts`
-- **설정** — `userData/settings.json`을 읽고 검사(`normalizeSettings`)해 들고 있다가, 바뀌면 원자적으로 쓰고 모든 창(`IPC.settingsChanged`)과 main 구독자(패널 모서리·지연·크기·캡처 숨김, 트레이)에 알린다 — `src/main/settingsService.ts`, 형식 `src/shared/settings.ts`, 화면 `views/SettingsView.tsx`
+- **설정** — `userData/settings.json`을 읽고 검사(`normalizeSettings`)해 들고 있다가, 바뀌면 원자적으로 쓰고 모든 창(`IPC.settingsChanged`)과 main 구독자(패널 모서리·지연·크기·진하기·캡처 숨김, 트레이)에 알린다 — `src/main/settingsService.ts`, 형식 `src/shared/settings.ts`, 화면 `views/SettingsView.tsx`
 - **설정 창** — 평범한 창 하나(`#settings` 해시로 같은 렌더러). 트레이 메뉴·패널 톱니바퀴·두 번째 실행에서 연다 — `src/main/settingsWindow.ts`
 - **모니터** — 모니터 목록(`DisplayInfo`)과 배치 변경 방송(`IPC.displaysChanged`, 떠 있던 패널은 숨김). 핫존 모니터 고르기(`pickDisplay`)·막힌 모서리 판정(`isCornerBlocked`)은 순수 함수. 설정 창은 배치를 비율대로 줄인 그림에 모니터마다 네 모서리 버튼(막힌 곳은 비활성) — `src/main/displays.ts`, `src/shared/displays.ts`, `components/DisplayMap.tsx`
 - **트레이** — 점 격자 아이콘(mac 템플릿·Windows 회색, `resources/tray*.png`), 설정·종료 메뉴, 설정으로 켜고 끔 — `src/main/tray.ts`
